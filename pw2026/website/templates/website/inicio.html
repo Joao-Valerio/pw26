@@ -1,24 +1,67 @@
 {% load static %}
 
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link rel="stylesheet" href="{% static "css/estilo.css" %}">
+    <title>Restaurante Sabor & Arte</title>
+    <link rel="stylesheet" href="{% static 'css/estilo.css' %}">
 </head>
 
 <body>
 
-    <h1>Meu template top</h1>
+<header>
+    <nav class="navbar">
+        <h1 class="logo">Sabor & Arte</h1>
+        <ul>
+            <li><a href="#">Início</a></li>
+            <li><a href="#">Cardápio</a></li>
+            <li><a href="{% static 'sobre.html' %}">Sobre</a></li>
+            <li><a href="{% static 'contato.html' %}">Contato</a></li>
+        </ul>
+    </nav>
+</header>
 
-    <ul>
-        <li><a href="{% url "pagina_inicial" %}">Página inicial</a></li>
-        <li><a href="{% url "sobre" %}">Sobre o projeto</a></li>
-        <li><a href="{% url "contato" %}">Entre em contato</a></li>
-    </ul>
+<section class="banner">
+    <h2>O melhor sabor da cidade</h2>
+    <p>Com ingredientes frescos e receitas especiais</p>
+    <button>Ver Cardápio</button>
+</section>
+
+<section class="pratos">
+    <h2>Pratos Populares</h2>
+
+    <div class="container-pratos">
+
+        <div class="card">
+            <h3>Hambúrguer Artesanal</h3>
+            <p>Pão brioche, carne 180g, queijo cheddar</p>
+        </div>
+
+        <div class="card">
+            <h3>Pizza Italiana</h3>
+            <p>Massa fina, molho especial e mozzarella</p>
+        </div>
+
+        <div class="card">
+            <h3>Macarrão Carbonara</h3>
+            <p>Receita tradicional italiana</p>
+        </div>
+
+    </div>
+</section>
+
+<section class="sobre">
+    <h2>Sobre Nós</h2>
+    <p>
+        Nosso restaurante nasceu com o objetivo de oferecer pratos deliciosos
+        feitos com ingredientes frescos e muito carinho.
+    </p>
+</section>
+
+<footer>
+    <p>© 2026 Restaurante Sabor & Arte</p>
+</footer>
 
 </body>
 </html>

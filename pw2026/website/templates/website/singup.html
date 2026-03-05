@@ -5,9 +5,8 @@
 
 <head>
 <meta charset="UTF-8">
-<title>Sobre</title>
+<title>Criar Conta</title>
 
-{% load static %}
 <link rel="stylesheet" href="{% static 'css/style.css' %}">
 
 </head>
@@ -22,7 +21,6 @@
 
 <ul>
 <li><a href="/">Início</a></li>
-<li><a href="/contato">Contato</a></li>
 <li><a href="/login">Login</a></li>
 </ul>
 
@@ -32,17 +30,21 @@
 
 <section class="sobre">
 
-<h2>Sobre Nosso Restaurante</h2>
+<h2>Criar Conta</h2>
 
-<p>
-Fundado em 2020, o restaurante Sabor & Arte nasceu com o objetivo de trazer
-uma experiência gastronômica única para nossos clientes.
-</p>
+<form class="form">
 
-<p>
-Utilizamos ingredientes frescos e receitas especiais para garantir
-qualidade e sabor em cada prato servido.
-</p>
+<input type="text" placeholder="Nome">
+
+<input type="email" placeholder="Email">
+
+<input type="password" placeholder="Senha">
+
+<input type="password" placeholder="Confirmar senha">
+
+<button type="submit">Cadastrar</button>
+
+</form>
 
 </section>
 
@@ -51,5 +53,4 @@ qualidade e sabor em cada prato servido.
 </footer>
 
 </body>
-
 </html>
