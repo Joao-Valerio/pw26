@@ -1,67 +1,80 @@
 {% load static %}
 
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Restaurante Sabor & Arte</title>
-    <link rel="stylesheet" href="{% static 'css/estilo.css' %}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurante Delícia - Home</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/home.css' %}">
 </head>
-
 <body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="nav">
+            <div class="logo">🍽️ Sabor e Arte</div>
+            <ul class="nav-links">
+                <li><a href="#home">Início</a></li>
+                <li><a href="#destaques">Destaques</a></li>
+                <li><a href="{% url 'sobre' %}">Sobre</a></li>
+                <li><a href="{% url 'contato' %}">Contato</a></li>
+            </ul>
+            <div class="hamburger">☰</div>
+        </nav>
+    </header>
 
-<header>
-    <nav class="navbar">
-        <h1 class="logo">Sabor & Arte</h1>
-        <ul>
-            <li><a href="#">Início</a></li>
-            <li><a href="#">Cardápio</a></li>
-            <li><a href="{% static 'sobre.html' %}">Sobre</a></li>
-            <li><a href="{% static 'contato.html' %}">Contato</a></li>
-        </ul>
-    </nav>
-</header>
-
-<section class="banner">
-    <h2>O melhor sabor da cidade</h2>
-    <p>Com ingredientes frescos e receitas especiais</p>
-    <button>Ver Cardápio</button>
-</section>
-
-<section class="pratos">
-    <h2>Pratos Populares</h2>
-
-    <div class="container-pratos">
-
-        <div class="card">
-            <h3>Hambúrguer Artesanal</h3>
-            <p>Pão brioche, carne 180g, queijo cheddar</p>
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="hero-content">
+            <h1>Bem-vindo ao Restaurante Delícia</h1>
+            <p>Saboreie pratos inesquecíveis em um ambiente acolhedor. Reserve sua mesa agora!</p>
+            <a href="#contato" class="btn-primary">Reservar Mesa</a>
         </div>
+    </section>
 
-        <div class="card">
-            <h3>Pizza Italiana</h3>
-            <p>Massa fina, molho especial e mozzarella</p>
+    <!-- Destaques -->
+    <section id="destaques" class="destaques">
+        <h2>Nossos Destaques</h2>
+        <div class="grid">
+            <div class="card">
+                <img src="https://via.placeholder.com/300x200?text=Prato+1" alt="Prato do dia">
+                <h3>Prato do Dia</h3>
+                <p>Delicioso filé mignon com molho especial. R$ 45,90</p>
+            </div>
+            <div class="card">
+                <img src="https://via.placeholder.com/300x200?text=Prato+2" alt="Pizza Margherita">
+                <h3>Pizza Margherita</h3>
+                <p>Pizza artesanal com ingredientes frescos. R$ 35,00</p>
+            </div>
+            <div class="card">
+                <img src="https://via.placeholder.com/300x200?text=Sobremesa" alt="Sobremesa">
+                <h3>Sobremesa Especial</h3>
+                <p>Cheesecake cremoso com frutas da estação. R$ 18,90</p>
+            </div>
         </div>
+    </section>
 
-        <div class="card">
-            <h3>Macarrão Carbonara</h3>
-            <p>Receita tradicional italiana</p>
+    <!-- Sobre -->
+    <section id="sobre" class="sobre">
+        <div class="container">
+            <h2>Sobre Nós</h2>
+            <p>Fundado em 2020, o Restaurante Delícia oferece culinária brasileira autêntica com toques modernos. Nossa equipe usa ingredientes frescos para criar experiências únicas.[web:1][web:2]</p>
         </div>
+    </section>
 
-    </div>
-</section>
+    <!-- Footer -->
+    <footer id="contato" class="footer">
+        <div class="container">
+            <p>&copy; 2026 Restaurante Delícia. Paranavaí, PR. Tel: (44) 99999-9999 | Email: contato@delicia.com.br</p>
+        </div>
+    </footer>
 
-<section class="sobre">
-    <h2>Sobre Nós</h2>
-    <p>
-        Nosso restaurante nasceu com o objetivo de oferecer pratos deliciosos
-        feitos com ingredientes frescos e muito carinho.
-    </p>
-</section>
-
-<footer>
-    <p>© 2026 Restaurante Sabor & Arte</p>
-</footer>
-
+    <script>
+        // Menu mobile simples
+        document.querySelector('.hamburger').addEventListener('click', () => {
+            document.querySelector('.nav-links').classList.toggle('active');
+        });
+    </script>
 </body>
 </html>
