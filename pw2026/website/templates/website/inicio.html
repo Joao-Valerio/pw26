@@ -1,80 +1,1038 @@
+{% extends "website/modelo.html" %}
+
 {% load static %}
 
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Restaurante Delícia - Home</title>
-    {% load static %}
-    <link rel="stylesheet" href="{% static 'css/home.css' %}">
-</head>
-<body>
-    <!-- Header -->
-    <header class="header">
-        <nav class="nav">
-            <div class="logo">🍽️ Sabor e Arte</div>
-            <ul class="nav-links">
-                <li><a href="#home">Início</a></li>
-                <li><a href="#destaques">Destaques</a></li>
-                <li><a href="{% url 'sobre' %}">Sobre</a></li>
-                <li><a href="{% url 'contato' %}">Contato</a></li>
-            </ul>
-            <div class="hamburger">☰</div>
-        </nav>
-    </header>
+{% block title %}Início — MeuSite{% endblock %}
 
-    <!-- Hero Section -->
-    <section id="home" class="hero">
+{% block page_title %}{% endblock %}
+{% block page_subtitle %}{% endblock %}
+{% block page_header %}{% endblock %}
+{% block breadcrumb %}{% endblock %}
+{% block sidebar %}{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* ── Reset do content-section para esta página ── */
+  .content-section { padding: 0 !important; }
+
+  /* ══════════════════════════════════════════
+     HERO
+  ══════════════════════════════════════════ */
+  .hero {
+    min-height: 100vh;
+    background: var(--petrol-deeper);
+    position: relative;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+  }
+
+  /* grade decorativa de fundo */
+  .hero-grid {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+  }
+
+  /* brilho radial */
+  .hero-glow {
+    position: absolute;
+    width: 900px; height: 900px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(26,107,114,.45) 0%, transparent 65%);
+    top: -200px; right: -200px;
+    pointer-events: none;
+    animation: pulse 8s ease-in-out infinite;
+  }
+  .hero-glow-2 {
+    position: absolute;
+    width: 600px; height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(240,192,64,.08) 0%, transparent 65%);
+    bottom: -100px; left: -100px;
+    pointer-events: none;
+    animation: pulse 10s ease-in-out infinite reverse;
+  }
+  @keyframes pulse {
+    0%,100% { transform: scale(1); opacity: 1; }
+    50%      { transform: scale(1.08); opacity: .75; }
+  }
+
+  /* formas geométricas flutuantes */
+  .hero-shape {
+    position: absolute;
+    border: 1.5px solid rgba(255,255,255,.06);
+    border-radius: 50%;
+    pointer-events: none;
+    animation: spin linear infinite;
+  }
+  .hero-shape-1 { width:500px;height:500px; top:-80px;right:8%;  animation-duration:40s; }
+  .hero-shape-2 { width:300px;height:300px; top:10%; right:15%;  animation-duration:28s;reverse; border-color:rgba(240,192,64,.07); }
+  .hero-shape-3 { width:160px;height:160px; bottom:15%;right:22%;animation-duration:20s; }
+  @keyframes spin { from{transform:rotate(0)} to{transform:rotate(360deg)} }
+
+  /* badge animado */
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    background: rgba(240,192,64,.12);
+    border: 1px solid rgba(240,192,64,.25);
+    color: var(--accent);
+    font-size: .75rem;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    padding: .35rem .9rem;
+    border-radius: 999px;
+    margin-bottom: 1.5rem;
+    animation: fadeDown .6s ease both;
+  }
+  .hero-badge .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: blink 1.4s ease-in-out infinite;
+  }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.2} }
+
+  .hero-content { position: relative; z-index: 2; }
+
+  .hero-title {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(3rem, 7vw, 5.5rem);
+    line-height: 1.0;
+    letter-spacing: -.03em;
+    color: var(--white);
+    margin-bottom: 1.5rem;
+    animation: fadeDown .7s .1s ease both;
+  }
+  .hero-title .highlight {
+    background: linear-gradient(135deg, var(--accent) 0%, #f7d96b 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero-title .line-break { display: block; }
+
+  .hero-desc {
+    font-size: 1.1rem;
+    color: rgba(255,255,255,.65);
+    max-width: 480px;
+    line-height: 1.75;
+    margin-bottom: 2.5rem;
+    animation: fadeDown .7s .2s ease both;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    animation: fadeDown .7s .3s ease both;
+  }
+
+  .btn-hero-primary {
+    background: var(--accent);
+    color: var(--petrol-deeper);
+    font-weight: 700;
+    font-size: .95rem;
+    padding: .85rem 2rem;
+    border-radius: var(--radius-sm);
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    text-decoration: none;
+    transition: all var(--transition);
+    box-shadow: 0 0 0 0 rgba(240,192,64,.4);
+  }
+  .btn-hero-primary:hover {
+    background: var(--accent-dark);
+    color: var(--petrol-deeper);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(240,192,64,.3);
+  }
+
+  .btn-hero-ghost {
+    background: rgba(255,255,255,.07);
+    color: rgba(255,255,255,.85);
+    font-weight: 600;
+    font-size: .95rem;
+    padding: .85rem 2rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid rgba(255,255,255,.15);
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    text-decoration: none;
+    transition: all var(--transition);
+  }
+  .btn-hero-ghost:hover {
+    background: rgba(255,255,255,.13);
+    color: var(--white);
+    border-color: rgba(255,255,255,.3);
+    transform: translateY(-2px);
+  }
+
+  /* stats no hero */
+  .hero-stats {
+    display: flex;
+    gap: 2.5rem;
+    margin-top: 3.5rem;
+    padding-top: 2.5rem;
+    border-top: 1px solid rgba(255,255,255,.08);
+    animation: fadeDown .7s .4s ease both;
+    flex-wrap: wrap;
+  }
+  .stat-item .stat-num {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 2rem;
+    color: var(--white);
+    line-height: 1;
+  }
+  .stat-item .stat-num span { color: var(--accent); }
+  .stat-item .stat-label {
+    font-size: .8rem;
+    color: rgba(255,255,255,.45);
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    margin-top: .25rem;
+  }
+
+  /* card flutuante no hero */
+  .hero-visual {
+    position: relative;
+    z-index: 2;
+    animation: fadeUp .9s .2s ease both;
+  }
+  .hero-card-main {
+    background: rgba(255,255,255,.04);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,.1);
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    box-shadow: var(--shadow-lg), 0 0 80px rgba(26,107,114,.2);
+  }
+  .hero-card-header {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    margin-bottom: 1.75rem;
+  }
+  .card-dots { display: flex; gap: .4rem; }
+  .card-dots span {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    display: block;
+  }
+  .card-dots span:nth-child(1){background:#ff5f57}
+  .card-dots span:nth-child(2){background:#febc2e}
+  .card-dots span:nth-child(3){background:#28c840}
+
+  .metric-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: .85rem 1rem;
+    border-radius: var(--radius-sm);
+    margin-bottom: .5rem;
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(255,255,255,.06);
+    transition: background var(--transition);
+  }
+  .metric-row:hover { background: rgba(255,255,255,.08); }
+  .metric-label {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    font-size: .82rem;
+    color: rgba(255,255,255,.65);
+  }
+  .metric-label i { color: var(--petrol-light); }
+  .metric-value {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: .95rem;
+    color: var(--white);
+  }
+  .metric-badge {
+    font-size: .7rem;
+    font-weight: 700;
+    padding: .15rem .5rem;
+    border-radius: 999px;
+  }
+  .badge-up   { background:rgba(34,197,94,.15); color:#4ade80; }
+  .badge-down { background:rgba(239,68,68,.15);  color:#f87171; }
+
+  .progress-wrap { margin-top: 1.25rem; }
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: .75rem;
+    color: rgba(255,255,255,.5);
+    margin-bottom: .4rem;
+  }
+  .progress-bar-bg {
+    height: 6px;
+    background: rgba(255,255,255,.08);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: .75rem;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: linear-gradient(90deg, var(--petrol), var(--petrol-light));
+    animation: growBar 1.5s .8s ease both;
+    transform-origin: left;
+  }
+  .progress-bar-fill.accent {
+    background: linear-gradient(90deg, var(--accent-dark), var(--accent));
+  }
+  @keyframes growBar { from{transform:scaleX(0)} to{transform:scaleX(1)} }
+
+  /* card flutuante pequeno */
+  .hero-card-float {
+    position: absolute;
+    background: rgba(255,255,255,.06);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: var(--radius-md);
+    padding: .85rem 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    animation: float 5s ease-in-out infinite;
+    box-shadow: var(--shadow-md);
+  }
+  .hero-card-float-1 { bottom: -20px; left: -30px; animation-delay: 0s; }
+  .hero-card-float-2 { top: -20px; right: -20px; animation-delay: 2.5s; }
+  @keyframes float {
+    0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)}
+  }
+  .float-icon {
+    width: 36px; height: 36px;
+    border-radius: var(--radius-sm);
+    display: grid; place-items: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+  .float-text .float-num {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1rem;
+    color: var(--white);
+    line-height: 1;
+  }
+  .float-text .float-lbl {
+    font-size: .7rem;
+    color: rgba(255,255,255,.5);
+    margin-top: 1px;
+  }
+
+  /* ══════════════════════════════════════════
+     SEÇÃO: Sobre / Features
+  ══════════════════════════════════════════ */
+  .section-features {
+    padding: 7rem 0;
+    background: var(--surface);
+    position: relative;
+    overflow: hidden;
+  }
+  .section-features::before {
+    content:'';
+    position:absolute;
+    top:-1px; left:0; right:0;
+    height:80px;
+    background: var(--petrol-deeper);
+    clip-path: ellipse(60% 100% at 50% 0%);
+  }
+
+  .feature-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 2rem;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+    transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
+  }
+  .feature-card::after {
+    content:'';
+    position:absolute;
+    bottom:0; left:0; right:0;
+    height:3px;
+    background: linear-gradient(90deg, var(--petrol), var(--petrol-light));
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform .35s ease;
+  }
+  .feature-card:hover { transform:translateY(-6px); box-shadow:var(--shadow-md); border-color:var(--petrol-pale); }
+  .feature-card:hover::after { transform:scaleX(1); }
+
+  .feature-icon {
+    width: 56px; height: 56px;
+    border-radius: var(--radius-md);
+    background: var(--petrol-pale);
+    display: grid; place-items: center;
+    font-size: 1.5rem;
+    color: var(--petrol);
+    margin-bottom: 1.25rem;
+    transition: background var(--transition), color var(--transition), transform var(--transition);
+  }
+  .feature-card:hover .feature-icon {
+    background: var(--petrol);
+    color: var(--white);
+    transform: rotate(-5deg) scale(1.05);
+  }
+
+  .feature-title {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--text-main);
+    margin-bottom: .6rem;
+  }
+  .feature-text { font-size: .9rem; color: var(--text-muted); line-height: 1.7; }
+
+  /* ══════════════════════════════════════════
+     SEÇÃO: Como funciona
+  ══════════════════════════════════════════ */
+  .section-steps {
+    padding: 7rem 0;
+    background: var(--white);
+  }
+
+  .step-item {
+    display: flex;
+    gap: 1.5rem;
+    align-items: flex-start;
+    margin-bottom: 3rem;
+    opacity: 0;
+    transform: translateX(-20px);
+    transition: opacity .5s ease, transform .5s ease;
+  }
+  .step-item.visible { opacity: 1; transform: translateX(0); }
+
+  .step-number {
+    width: 52px; height: 52px;
+    border-radius: var(--radius-sm);
+    background: var(--petrol);
+    color: var(--white);
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1.2rem;
+    display: grid; place-items: center;
+    flex-shrink: 0;
+    position: relative;
+  }
+  .step-number::after {
+    content: '';
+    position: absolute;
+    top: 100%; left: 50%;
+    transform: translateX(-50%);
+    width: 2px;
+    height: 3rem;
+    background: linear-gradient(to bottom, var(--petrol), transparent);
+  }
+  .step-item:last-child .step-number::after { display: none; }
+
+  .step-body .step-title {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: var(--text-main);
+    margin-bottom: .4rem;
+  }
+  .step-body .step-text { font-size: .88rem; color: var(--text-muted); line-height: 1.7; }
+
+  /* ilustração lateral dos steps */
+  .steps-visual {
+    background: linear-gradient(135deg, var(--petrol-deeper), var(--petrol));
+    border-radius: var(--radius-lg);
+    padding: 2.5rem;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .steps-visual::before {
+    content:'';
+    position:absolute; inset:0;
+    background:radial-gradient(ellipse at 80% 20%, rgba(240,192,64,.1) 0%, transparent 60%);
+  }
+  .steps-visual-title {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 2rem;
+    color: var(--white);
+    line-height: 1.1;
+    margin-bottom: 1rem;
+    position: relative;
+  }
+  .steps-visual-desc {
+    color: rgba(255,255,255,.6);
+    font-size: .9rem;
+    line-height: 1.75;
+    position: relative;
+    margin-bottom: 2rem;
+  }
+  .steps-visual-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    background: var(--accent);
+    color: var(--petrol-deeper);
+    font-weight: 700;
+    font-size: .85rem;
+    padding: .65rem 1.25rem;
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    transition: all var(--transition);
+    position: relative;
+    align-self: flex-start;
+  }
+  .steps-visual-cta:hover {
+    background: var(--accent-dark);
+    color: var(--petrol-deeper);
+    transform: translateY(-2px);
+  }
+
+  /* ══════════════════════════════════════════
+     SEÇÃO: Depoimentos
+  ══════════════════════════════════════════ */
+  .section-testimonials {
+    padding: 7rem 0;
+    background: var(--petrol-pale);
+    position: relative;
+    overflow: hidden;
+  }
+  .section-testimonials::before {
+    content:'';
+    position:absolute;
+    top:0; left:0; right:0; bottom:0;
+    background-image:
+      radial-gradient(circle at 20% 50%, rgba(26,107,114,.05) 0%, transparent 50%),
+      radial-gradient(circle at 80% 50%, rgba(26,107,114,.05) 0%, transparent 50%);
+    pointer-events: none;
+  }
+
+  .testimonial-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 2rem;
+    height: 100%;
+    position: relative;
+    transition: transform var(--transition), box-shadow var(--transition);
+  }
+  .testimonial-card:hover { transform:translateY(-4px); box-shadow:var(--shadow-md); }
+
+  .quote-icon {
+    font-size: 3rem;
+    line-height: 1;
+    color: var(--petrol-pale);
+    font-family: Georgia, serif;
+    margin-bottom: .5rem;
+  }
+  .testimonial-text {
+    font-size: .92rem;
+    color: var(--text-muted);
+    line-height: 1.75;
+    margin-bottom: 1.5rem;
+    font-style: italic;
+  }
+  .testimonial-author {
+    display: flex;
+    align-items: center;
+    gap: .85rem;
+  }
+  .author-avatar {
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--petrol), var(--petrol-light));
+    display: grid; place-items: center;
+    color: var(--white);
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+  .author-name {
+    font-weight: 600;
+    font-size: .9rem;
+    color: var(--text-main);
+  }
+  .author-role { font-size: .78rem; color: var(--text-muted); }
+  .stars { color: var(--accent); font-size: .75rem; margin-bottom: .5rem; }
+
+  /* ══════════════════════════════════════════
+     CTA FINAL
+  ══════════════════════════════════════════ */
+  .section-cta {
+    padding: 7rem 0;
+    background: linear-gradient(135deg, var(--petrol-deeper) 0%, var(--petrol) 100%);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .section-cta::before {
+    content:'';
+    position:absolute; inset:0;
+    background-image:
+      linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+  .cta-title {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    color: var(--white);
+    letter-spacing: -.02em;
+    margin-bottom: 1rem;
+    position: relative;
+  }
+  .cta-desc {
+    color: rgba(255,255,255,.65);
+    font-size: 1.05rem;
+    max-width: 520px;
+    margin: 0 auto 2.5rem;
+    position: relative;
+  }
+  .cta-actions { position: relative; }
+
+  /* animações de entrada */
+  @keyframes fadeDown {
+    from { opacity:0; transform:translateY(-16px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+  @keyframes fadeUp {
+    from { opacity:0; transform:translateY(24px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+
+  /* scroll reveal genérico */
+  .reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity .6s ease, transform .6s ease;
+  }
+  .reveal.visible { opacity:1; transform:translateY(0); }
+  .reveal-delay-1 { transition-delay: .1s; }
+  .reveal-delay-2 { transition-delay: .2s; }
+  .reveal-delay-3 { transition-delay: .3s; }
+  .reveal-delay-4 { transition-delay: .4s; }
+</style>
+{% endblock extra_css %}
+
+{% block content %}
+
+<!-- ═══════════════════════════════════════════
+     HERO
+═══════════════════════════════════════════ -->
+<section class="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-glow-2"></div>
+  <div class="hero-shape hero-shape-1"></div>
+  <div class="hero-shape hero-shape-2"></div>
+  <div class="hero-shape hero-shape-3"></div>
+
+  <div class="container py-5">
+    <div class="row align-items-center g-5">
+
+      <!-- Texto -->
+      <div class="col-lg-6">
         <div class="hero-content">
-            <h1>Bem-vindo ao Restaurante Delícia</h1>
-            <p>Saboreie pratos inesquecíveis em um ambiente acolhedor. Reserve sua mesa agora!</p>
-            <a href="#contato" class="btn-primary">Reservar Mesa</a>
-        </div>
-    </section>
+          <div class="hero-badge">
+            <span class="dot"></span>
+            Bem-vindo ao futuro
+          </div>
 
-    <!-- Destaques -->
-    <section id="destaques" class="destaques">
-        <h2>Nossos Destaques</h2>
-        <div class="grid">
-            <div class="card">
-                <img src="https://via.placeholder.com/300x200?text=Prato+1" alt="Prato do dia">
-                <h3>Prato do Dia</h3>
-                <p>Delicioso filé mignon com molho especial. R$ 45,90</p>
+          <h1 class="hero-title">
+            Soluções que
+            <span class="line-break highlight">transformam</span>
+            o seu negócio
+          </h1>
+
+          <p class="hero-desc">
+            Plataforma completa para impulsionar seus resultados com tecnologia de ponta, 
+            design inteligente e uma experiência que seus clientes vão amar.
+          </p>
+
+          <div class="hero-actions">
+            <a href="{% url 'cadastro' %}" class="btn-hero-primary">
+              Começar agora <i class="bi bi-arrow-right"></i>
+            </a>
+            <a href="{% url 'sobre' %}" class="btn-hero-ghost">
+              <i class="bi bi-play-circle"></i> Saiba mais
+            </a>
+          </div>
+
+          <div class="hero-stats">
+            <div class="stat-item">
+              <div class="stat-num">12<span>k+</span></div>
+              <div class="stat-label">Usuários ativos</div>
             </div>
-            <div class="card">
-                <img src="https://via.placeholder.com/300x200?text=Prato+2" alt="Pizza Margherita">
-                <h3>Pizza Margherita</h3>
-                <p>Pizza artesanal com ingredientes frescos. R$ 35,00</p>
+            <div class="stat-item">
+              <div class="stat-num">98<span>%</span></div>
+              <div class="stat-label">Satisfação</div>
             </div>
-            <div class="card">
-                <img src="https://via.placeholder.com/300x200?text=Sobremesa" alt="Sobremesa">
-                <h3>Sobremesa Especial</h3>
-                <p>Cheesecake cremoso com frutas da estação. R$ 18,90</p>
+            <div class="stat-item">
+              <div class="stat-num">5<span>x</span></div>
+              <div class="stat-label">Mais produtivo</div>
             </div>
+          </div>
         </div>
-    </section>
+      </div>
 
-    <!-- Sobre -->
-    <section id="sobre" class="sobre">
-        <div class="container">
-            <h2>Sobre Nós</h2>
-            <p>Fundado em 2020, o Restaurante Delícia oferece culinária brasileira autêntica com toques modernos. Nossa equipe usa ingredientes frescos para criar experiências únicas.[web:1][web:2]</p>
+      <!-- Visual / Card -->
+      <div class="col-lg-6">
+        <div class="hero-visual position-relative">
+
+          <!-- Card flutuante pequeno - topo direito -->
+          <div class="hero-card-float hero-card-float-2">
+            <div class="float-icon" style="background:rgba(240,192,64,.15);color:var(--accent)">
+              <i class="bi bi-lightning-charge-fill"></i>
+            </div>
+            <div class="float-text">
+              <div class="float-num">+47%</div>
+              <div class="float-lbl">Performance</div>
+            </div>
+          </div>
+
+          <!-- Card principal -->
+          <div class="hero-card-main">
+            <div class="hero-card-header">
+              <div class="card-dots">
+                <span></span><span></span><span></span>
+              </div>
+              <span style="font-size:.75rem;color:rgba(255,255,255,.35);margin-left:.5rem;font-family:var(--font-display)">
+                dashboard.meusite.com
+              </span>
+            </div>
+
+            <div class="metric-row">
+              <div class="metric-label">
+                <i class="bi bi-graph-up-arrow"></i> Receita mensal
+              </div>
+              <div style="display:flex;align-items:center;gap:.6rem">
+                <div class="metric-value">R$ 48.200</div>
+                <span class="metric-badge badge-up">↑ 12%</span>
+              </div>
+            </div>
+
+            <div class="metric-row">
+              <div class="metric-label">
+                <i class="bi bi-people-fill"></i> Novos clientes
+              </div>
+              <div style="display:flex;align-items:center;gap:.6rem">
+                <div class="metric-value">1.340</div>
+                <span class="metric-badge badge-up">↑ 8%</span>
+              </div>
+            </div>
+
+            <div class="metric-row">
+              <div class="metric-label">
+                <i class="bi bi-cart-check-fill"></i> Conversões
+              </div>
+              <div style="display:flex;align-items:center;gap:.6rem">
+                <div class="metric-value">3,8%</div>
+                <span class="metric-badge badge-down">↓ 2%</span>
+              </div>
+            </div>
+
+            <div class="progress-wrap">
+              <div class="progress-label">
+                <span>Meta mensal</span>
+                <span>78%</span>
+              </div>
+              <div class="progress-bar-bg">
+                <div class="progress-bar-fill" style="width:78%"></div>
+              </div>
+
+              <div class="progress-label">
+                <span>Satisfação NPS</span>
+                <span>92%</span>
+              </div>
+              <div class="progress-bar-bg">
+                <div class="progress-bar-fill accent" style="width:92%"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card flutuante pequeno - baixo esquerdo -->
+          <div class="hero-card-float hero-card-float-1">
+            <div class="float-icon" style="background:rgba(42,138,147,.2);color:var(--petrol-light)">
+              <i class="bi bi-shield-check-fill"></i>
+            </div>
+            <div class="float-text">
+              <div class="float-num">SSL Ativo</div>
+              <div class="float-lbl">100% Seguro</div>
+            </div>
+          </div>
+
         </div>
-    </section>
+      </div>
 
-    <!-- Footer -->
-    <footer id="contato" class="footer">
-        <div class="container">
-            <p>&copy; 2026 Restaurante Delícia. Paranavaí, PR. Tel: (44) 99999-9999 | Email: contato@delicia.com.br</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     FEATURES
+═══════════════════════════════════════════ -->
+<section class="section-features">
+  <div class="container">
+
+    <div class="text-center mb-5 reveal">
+      <span class="section-badge">Por que nos escolher</span>
+      <h2 class="section-title">Tudo que você precisa,<br>em um só lugar</h2>
+      <p class="section-subtitle mx-auto" style="max-width:520px">
+        Ferramentas poderosas, interface intuitiva e suporte dedicado para levar seu projeto ao próximo nível.
+      </p>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-md-6 col-lg-4 reveal reveal-delay-1">
+        <div class="feature-card">
+          <div class="feature-icon"><i class="bi bi-rocket-takeoff"></i></div>
+          <div class="feature-title">Alta Performance</div>
+          <p class="feature-text">
+            Infraestrutura otimizada que garante velocidade e estabilidade mesmo em picos de acesso, sem comprometer a experiência.
+          </p>
         </div>
-    </footer>
+      </div>
+      <div class="col-md-6 col-lg-4 reveal reveal-delay-2">
+        <div class="feature-card">
+          <div class="feature-icon"><i class="bi bi-shield-lock"></i></div>
+          <div class="feature-title">Segurança Total</div>
+          <p class="feature-text">
+            Criptografia de ponta a ponta, backups automáticos e conformidade com LGPD para proteger você e seus clientes.
+          </p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4 reveal reveal-delay-3">
+        <div class="feature-card">
+          <div class="feature-icon"><i class="bi bi-bar-chart-line"></i></div>
+          <div class="feature-title">Analytics Avançado</div>
+          <p class="feature-text">
+            Dashboards em tempo real com insights acionáveis para tomar decisões embasadas em dados, não em achismos.
+          </p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4 reveal reveal-delay-1">
+        <div class="feature-card">
+          <div class="feature-icon"><i class="bi bi-gear-wide-connected"></i></div>
+          <div class="feature-title">Fácil Integração</div>
+          <p class="feature-text">
+            Conecte com as ferramentas que você já usa — CRM, ERP, e-commerce e dezenas de APIs em poucos cliques.
+          </p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4 reveal reveal-delay-2">
+        <div class="feature-card">
+          <div class="feature-icon"><i class="bi bi-headset"></i></div>
+          <div class="feature-title">Suporte 24/7</div>
+          <p class="feature-text">
+            Time especializado disponível a qualquer hora, por chat, e-mail ou telefone. Nunca deixamos você na mão.
+          </p>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-4 reveal reveal-delay-3">
+        <div class="feature-card">
+          <div class="feature-icon"><i class="bi bi-phone"></i></div>
+          <div class="feature-title">Mobile First</div>
+          <p class="feature-text">
+            Interface responsiva e aplicativo nativo que funcionam perfeitamente em qualquer dispositivo, em qualquer lugar.
+          </p>
+        </div>
+      </div>
+    </div>
 
-    <script>
-        // Menu mobile simples
-        document.querySelector('.hamburger').addEventListener('click', () => {
-            document.querySelector('.nav-links').classList.toggle('active');
-        });
-    </script>
-</body>
-</html>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     COMO FUNCIONA
+═══════════════════════════════════════════ -->
+<section class="section-steps">
+  <div class="container">
+    <div class="row g-5 align-items-center">
+
+      <div class="col-lg-5">
+        <div class="steps-visual">
+          <div class="steps-visual-title">
+            Resultados reais em <span style="color:var(--accent)">3 passos</span>
+          </div>
+          <p class="steps-visual-desc">
+            Nossa metodologia simplificada transforma a complexidade em clareza, 
+            para que você foque no que realmente importa: crescer.
+          </p>
+          <a href="{% url 'cadastro' %}" class="steps-visual-cta">
+            Criar conta grátis <i class="bi bi-arrow-right"></i>
+          </a>
+        </div>
+      </div>
+
+      <div class="col-lg-7">
+        <div class="step-item">
+          <div class="step-number">01</div>
+          <div class="step-body">
+            <div class="step-title">Crie sua conta em minutos</div>
+            <p class="step-text">
+              Cadastro rápido e sem burocracia. Sem necessidade de cartão de crédito para começar. 
+              Em menos de 2 minutos você já está dentro.
+            </p>
+          </div>
+        </div>
+
+        <div class="step-item">
+          <div class="step-number">02</div>
+          <div class="step-body">
+            <div class="step-title">Configure do jeito que você quer</div>
+            <p class="step-text">
+              Personalize a plataforma com as ferramentas e integrações que fazem sentido para o seu negócio. 
+              Painel intuitivo, sem código necessário.
+            </p>
+          </div>
+        </div>
+
+        <div class="step-item">
+          <div class="step-number">03</div>
+          <div class="step-body">
+            <div class="step-title">Acompanhe e escale seus resultados</div>
+            <p class="step-text">
+              Monitore métricas em tempo real, identifique oportunidades e tome decisões mais inteligentes 
+              para escalar o que funciona.
+            </p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     DEPOIMENTOS
+═══════════════════════════════════════════ -->
+<section class="section-testimonials">
+  <div class="container">
+
+    <div class="text-center mb-5 reveal">
+      <span class="section-badge">Depoimentos</span>
+      <h2 class="section-title">O que nossos clientes dizem</h2>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-md-4 reveal reveal-delay-1">
+        <div class="testimonial-card">
+          <div class="stars">★★★★★</div>
+          <div class="quote-icon">"</div>
+          <p class="testimonial-text">
+            Desde que migramos para essa plataforma, nossa produtividade aumentou 40%. 
+            A interface é incrível e o suporte responde muito rápido.
+          </p>
+          <div class="testimonial-author">
+            <div class="author-avatar">AM</div>
+            <div>
+              <div class="author-name">Ana Maria S.</div>
+              <div class="author-role">CEO, TechStart</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4 reveal reveal-delay-2">
+        <div class="testimonial-card">
+          <div class="stars">★★★★★</div>
+          <div class="quote-icon">"</div>
+          <p class="testimonial-text">
+            As integrações funcionam perfeitamente com nosso ERP. 
+            Economizamos horas de trabalho manual todo mês. Recomendo muito!
+          </p>
+          <div class="testimonial-author">
+            <div class="author-avatar">RC</div>
+            <div>
+              <div class="author-name">Rafael Carvalho</div>
+              <div class="author-role">Diretor de TI, LogiFlow</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-4 reveal reveal-delay-3">
+        <div class="testimonial-card">
+          <div class="stars">★★★★★</div>
+          <div class="quote-icon">"</div>
+          <p class="testimonial-text">
+            O dashboard de analytics me dá exatamente o que preciso saber. 
+            Simples, bonito e funcional. Melhor investimento que fizemos esse ano.
+          </p>
+          <div class="testimonial-author">
+            <div class="author-avatar">JP</div>
+            <div>
+              <div class="author-name">Juliana Prado</div>
+              <div class="author-role">Marketing, Vendas+</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     CTA FINAL
+═══════════════════════════════════════════ -->
+<section class="section-cta">
+  <div class="container reveal">
+    <h2 class="cta-title">
+      Pronto para começar?
+    </h2>
+    <p class="cta-desc">
+      Junte-se a milhares de empresas que já transformaram seus resultados. 
+      Teste grátis por 14 dias, sem compromisso.
+    </p>
+    <div class="cta-actions d-flex justify-content-center gap-3 flex-wrap">
+      <a href="{% url 'cadastro' %}" class="btn-hero-primary" style="font-size:1rem;padding:1rem 2.25rem">
+        Criar conta grátis <i class="bi bi-arrow-right"></i>
+      </a>
+      <a href="{% url 'contato' %}" class="btn-hero-ghost" style="font-size:1rem;padding:1rem 2.25rem">
+        <i class="bi bi-chat-dots"></i> Falar com especialista
+      </a>
+    </div>
+    <p style="color:rgba(255,255,255,.3);font-size:.8rem;margin-top:1.5rem;position:relative">
+      Sem cartão de crédito &nbsp;·&nbsp; Cancele quando quiser &nbsp;·&nbsp; Suporte incluído
+    </p>
+  </div>
+</section>
+
+{% endblock content %}
+
+{% block extra_js %}
+<script>
+  // Scroll reveal
+  const revealEls = document.querySelectorAll('.reveal, .step-item');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        observer.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.15 });
+  revealEls.forEach(el => observer.observe(el));
+</script>
+{% endblock extra_js %}

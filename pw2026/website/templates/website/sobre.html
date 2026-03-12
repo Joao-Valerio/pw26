@@ -1,55 +1,9 @@
-{% load static %}
-
-<!DOCTYPE html>
-<html lang="pt-br">
-
-<head>
-<meta charset="UTF-8">
-<title>Sobre</title>
+{% extends "website/modelo.html" %}
 
 {% load static %}
-<link rel="stylesheet" href="{% static 'css/estilo.css' %}">
 
-</head>
-
-<body>
-
-<header>
-
-<nav class="navbar">
-
-<h1 class="logo">Sabor & Arte</h1>
-
-<ul>
-<li><a href="/">Início</a></li>
-<li><a href="/contato">Contato</a></li>
-<li><a href="/login">Login</a></li>
-</ul>
-
-</nav>
-
-</header>
-
-<section class="sobre">
-
-<h2>Sobre Nosso Restaurante</h2>
-
-<p>
-Fundado em 2020, o restaurante Sabor & Arte nasceu com o objetivo de trazer
-uma experiência gastronômica única para nossos clientes.
-</p>
-
-<p>
-Utilizamos ingredientes frescos e receitas especiais para garantir
-qualidade e sabor em cada prato servido.
-</p>
-
-</section>
-
-<footer>
-<p>© 2026 Restaurante Sabor & Arte</p>
-</footer>
-
-</body>
-
-</html>
+{% block content %}
+<h1>
+    Sobre
+</h1>
+{% endblock content %}
