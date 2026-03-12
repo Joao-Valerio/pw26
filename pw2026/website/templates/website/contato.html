@@ -1,51 +1,9 @@
+{% extends "website/modelo.html" %}
+
 {% load static %}
 
-<!DOCTYPE html>
-<html lang="pt-br">
-
-<head>
-    <meta charset="UTF-8">
-    <title>Contato</title>
-
-    <link rel="stylesheet" href="{% static 'css/estilo.css' %}">
-</head>
-
-<body>
-
-<header>
-    <nav class="navbar">
-        <h1 class="logo">Sabor & Arte</h1>
-
-        <ul>
-            <li><a href="/">Início</a></li>
-            <li><a href="/sobre">Sobre</a></li>
-            <li><a href="/contato">Contato</a></li>
-            <li><a href="/login">Login</a></li>
-        </ul>
-    </nav>
-</header>
-
-<section class="sobre">
-
-<h2>Entre em Contato</h2>
-
-<form class="form">
-
-<input type="text" placeholder="Seu nome">
-
-<input type="email" placeholder="Seu email">
-
-<textarea placeholder="Sua mensagem"></textarea>
-
-<button type="submit">Enviar</button>
-
-</form>
-
-</section>
-
-<footer>
-<p>© 2026 Restaurante Sabor & Arte</p>
-</footer>
-
-</body>
-</html>
+{% block content %}
+<h1>
+    Contato
+</h1>
+{% endblock content %}

@@ -1,56 +1,9 @@
+{% extends "website/modelo.html" %}
+
 {% load static %}
 
-<!DOCTYPE html>
-<html lang="pt-br">
-
-<head>
-<meta charset="UTF-8">
-<title>Criar Conta</title>
-
-<link rel="stylesheet" href="{% static 'css/estilo.css' %}">
-
-</head>
-
-<body>
-
-<header>
-
-<nav class="navbar">
-
-<h1 class="logo">Sabor & Arte</h1>
-
-<ul>
-<li><a href="/">Início</a></li>
-<li><a href="/login">Login</a></li>
-</ul>
-
-</nav>
-
-</header>
-
-<section class="sobre">
-
-<h2>Criar Conta</h2>
-
-<form class="form">
-
-<input type="text" placeholder="Nome">
-
-<input type="email" placeholder="Email">
-
-<input type="password" placeholder="Senha">
-
-<input type="password" placeholder="Confirmar senha">
-
-<button type="submit">Cadastrar</button>
-
-</form>
-
-</section>
-
-<footer>
-<p>© 2026 Restaurante Sabor & Arte</p>
-</footer>
-
-</body>
-</html>
+{% block content %}
+<h1>
+    Cadastro
+</h1>
+{% endblock content %}
