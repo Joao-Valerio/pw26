@@ -1,9 +1,41 @@
 {% extends "website/modelo.html" %}
 
-{% load static %}
+{% block title %}Sobre a Arquitetura | FinTrack Django{% endblock %}
 
 {% block content %}
-<h1>
-    Sobre
-</h1>
-{% endblock content %}
+  <section class="row g-4">
+    <div class="col-lg-6">
+      <article class="info-card">
+        <div class="resource-icon"><i class="bi bi-boxes"></i></div>
+        <h3 class="h5">Camadas criadas</h3>
+        <p class="text-secondary">
+          O projeto foi estruturado em camadas bem definidas: `models.py` para dominio, `forms.py` para estados e entrada de dados,
+          `services.py` para montagem dos dados de dashboard e `views.py` para orquestrar as paginas.
+        </p>
+      </article>
+    </div>
+    <div class="col-lg-6">
+      <article class="info-card">
+        <div class="resource-icon"><i class="bi bi-diagram-2-fill"></i></div>
+        <h3 class="h5">Equivalencia com o diagrama</h3>
+        <p class="text-secondary">
+          Componentes como `Sidebar`, `TabelaGastos`, `ChartAreaInteractive`, `ChartLineGastosCliente` e `ContactForm`
+          foram transformados em templates reutilizaveis dentro de `website/templates/website/components`.
+        </p>
+      </article>
+    </div>
+    <div class="col-12">
+      <article class="content-card">
+        <div class="section-title mb-2">Rotas da aplicacao</div>
+        <p class="section-copy mb-4">
+          A navegacao do sistema agora concentra `dashboard`, `gastos`, `metas`, `relatorios`, `recursos`, `contato`, `login` e `cadastro`,
+          espelhando a organizacao que o diagrama sugeria para o frontend.
+        </p>
+        <div class="d-flex gap-2 flex-wrap">
+          <a href="{% url 'dashboard' %}" class="btn-accent">Ir para dashboard</a>
+          <a href="{% url 'recursos' %}" class="btn-outline-surface">Ver recursos</a>
+        </div>
+      </article>
+    </div>
+  </section>
+{% endblock %}

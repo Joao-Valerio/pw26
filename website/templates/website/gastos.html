@@ -1,0 +1,52 @@
+{% extends "website/modelo.html" %}
+
+{% block title %}Gastos | FinTrack Django{% endblock %}
+
+{% block page_actions %}
+  <a href="{% url 'gasto_novo' %}" class="btn-accent">Novo gasto</a>
+  <a href="{% url 'relatorios' %}" class="btn-outline-surface">Ver relatorios</a>
+{% endblock %}
+
+{% block content %}
+  <section class="card-grid">
+    <article class="mini-card">
+      <div class="label">Lancamentos</div>
+      <div class="value">{{ gastos|length }}</div>
+      <div class="meta">Quantidade total em exibicao.</div>
+    </article>
+    <article class="mini-card">
+      <div class="label">Recorrentes</div>
+      <div class="value">{{ recorrentes_count }}</div>
+      <div class="meta">Gastos com repeticao mensal.</div>
+    </article>
+    <article class="mini-card">
+      <div class="label">Maior categoria</div>
+      <div class="value">{% if categorias_gasto %}{{ categorias_gasto.0.categoria }}{% else %}--{% endif %}</div>
+      <div class="meta">Categoria com maior peso atual.</div>
+    </article>
+    <article class="mini-card">
+      <div class="label">Total analisado</div>
+      <div class="value">R$ {{ total_gastos }}</div>
+      <div class="meta">Consolidado da tabela e dos graficos.</div>
+    </article>
+  </section>
+
+  {% include "website/components/tabela_gastos.html" with gastos=gastos %}
+
+  <section class="content-grid">
+    {% include "website/components/chart_area_interactive.html" %}
+
+    <div class="list-card">
+      <div class="section-title mb-2">Categorias</div>
+      <p class="section-copy mb-3">Resumo por categoria derivado dos dados de gastos.</p>
+      {% for item in categorias_gasto %}
+        <div class="list-item">
+          <div class="d-flex justify-content-between gap-3">
+            <span>{{ item.categoria }}</span>
+            <strong>R$ {{ item.total }}</strong>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+{% endblock %}

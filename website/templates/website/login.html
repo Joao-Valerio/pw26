@@ -1,9 +1,31 @@
 {% extends "website/modelo.html" %}
 
-{% load static %}
+{% block title %}Login | FinTrack Django{% endblock %}
 
 {% block content %}
-<h1>
-    Login
-</h1>
-{% endblock content %}
+  <section class="form-shell">
+    <div class="section-title mb-2">Login</div>
+    <p class="section-copy mb-4">Tela equivalente ao componente `Login` do diagrama.</p>
+
+    <form method="post" class="row g-3">
+      {% csrf_token %}
+      {% for field in form %}
+        <div class="col-12">
+          <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+          {{ field }}
+          {% if field.errors %}
+            <div class="text-danger small mt-2">{{ field.errors|join:", " }}</div>
+          {% endif %}
+        </div>
+      {% endfor %}
+      <div class="col-12 d-grid">
+        <button type="submit" class="btn-accent">Entrar</button>
+      </div>
+    </form>
+
+    <div class="mt-4 text-secondary">
+      Ainda nao tem conta?
+      <a href="{% url 'cadastro' %}" class="text-decoration-none">Criar cadastro</a>
+    </div>
+  </section>
+{% endblock %}

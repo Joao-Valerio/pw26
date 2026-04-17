@@ -1,0 +1,60 @@
+{% extends "website/modelo.html" %}
+
+{% block title %}Dashboard | FinTrack Django{% endblock %}
+
+{% block page_actions %}
+  <a href="{% url 'gasto_novo' %}" class="btn-outline-surface">Novo gasto</a>
+  <a href="{% url 'gastos' %}" class="btn-outline-surface">Ver gastos</a>
+  <a href="{% url 'metas' %}" class="btn-accent">Acompanhar metas</a>
+{% endblock %}
+
+{% block content %}
+  <section class="card-grid">
+    <article class="mini-card">
+      <div class="label">Total de gastos</div>
+      <div class="value">R$ {{ total_gastos }}</div>
+      <div class="meta">Soma consolidada dos registros atuais.</div>
+    </article>
+    <article class="mini-card">
+      <div class="label">Gasto medio</div>
+      <div class="value">R$ {{ gasto_medio|floatformat:2 }}</div>
+      <div class="meta">Media calculada por lancamento.</div>
+    </article>
+    <article class="mini-card">
+      <div class="label">Valor em metas</div>
+      <div class="value">R$ {{ total_metas }}</div>
+      <div class="meta">Soma dos objetivos financeiros.</div>
+    </article>
+    <article class="mini-card">
+      <div class="label">Meta guardada</div>
+      <div class="value">{{ percentual_guardado }}%</div>
+      <div class="meta">Percentual atual do valor reservado.</div>
+    </article>
+  </section>
+
+  <section class="chart-grid">
+    {% include "website/components/chart_area_interactive.html" %}
+    {% include "website/components/chart_line_gastos_cliente.html" %}
+  </section>
+
+  <section class="content-grid">
+    {% include "website/components/tabela_gastos.html" with gastos=ultimos_gastos %}
+
+    <div class="list-card">
+      <div class="section-title mb-2">ChartDataGasto</div>
+      <p class="section-copy mb-3">Distribuicao das categorias calculada no backend.</p>
+      {% for item in categorias_gasto %}
+        <div class="list-item">
+          <div class="d-flex justify-content-between gap-3 mb-2">
+            <strong>{{ item.categoria }}</strong>
+            <span>R$ {{ item.total }}</span>
+          </div>
+          <div class="progress mb-2">
+            <div class="progress-bar" style="width: {{ item.percentual }}%; background: {{ item.cor }};"></div>
+          </div>
+          <small class="text-secondary">{{ item.percentual }}% do total</small>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+{% endblock %}

@@ -1,13 +1,39 @@
 from django.urls import path
-from .views import Index, Sobre, Contato, Login, Cadastro
+from .views import (
+    CadastroView,
+    ContatoView,
+    DashboardView,
+    GastoCreateView,
+    GastoDeleteView,
+    GastoUpdateView,
+    GastosView,
+    MetaCreateView,
+    MetaDeleteView,
+    MetaUpdateView,
+    MetasView,
+    RecursosView,
+    RelatoriosView,
+    SobreView,
+    UsuarioLoginView,
+    UsuarioLogoutView,
+)
 
 urlpatterns = [
-    # path("admin/", admin.site.urls),
-
-    path("inicio/", Index.as_view(), name="inicio"),
-    path("sobre/", Sobre.as_view(), name="sobre"),
-    path("contato/", Contato.as_view(), name="contato"),
-    path("login/", Login.as_view(), name="login"),
-    path("cadastro/", Cadastro.as_view(), name="cadastro"),
-
+    path("", DashboardView.as_view(), name="inicio"),
+    path("dashboard/", DashboardView.as_view(), name="dashboard"),
+    path("gastos/", GastosView.as_view(), name="gastos"),
+    path("gastos/novo/", GastoCreateView.as_view(), name="gasto_novo"),
+    path("gastos/<int:pk>/editar/", GastoUpdateView.as_view(), name="gasto_editar"),
+    path("gastos/<int:pk>/excluir/", GastoDeleteView.as_view(), name="gasto_excluir"),
+    path("metas/", MetasView.as_view(), name="metas"),
+    path("metas/nova/", MetaCreateView.as_view(), name="meta_nova"),
+    path("metas/<int:pk>/editar/", MetaUpdateView.as_view(), name="meta_editar"),
+    path("metas/<int:pk>/excluir/", MetaDeleteView.as_view(), name="meta_excluir"),
+    path("relatorios/", RelatoriosView.as_view(), name="relatorios"),
+    path("recursos/", RecursosView.as_view(), name="recursos"),
+    path("sobre/", SobreView.as_view(), name="sobre"),
+    path("contato/", ContatoView.as_view(), name="contato"),
+    path("login/", UsuarioLoginView.as_view(), name="login"),
+    path("cadastro/", CadastroView.as_view(), name="cadastro"),
+    path("logout/", UsuarioLogoutView.as_view(), name="logout"),
 ]

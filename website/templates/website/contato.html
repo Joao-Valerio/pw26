@@ -1,9 +1,29 @@
 {% extends "website/modelo.html" %}
 
-{% load static %}
+{% block title %}Contato | FinTrack Django{% endblock %}
 
 {% block content %}
-<h1>
-    Contato
-</h1>
-{% endblock content %}
+  <section class="content-grid">
+    {% include "website/components/contact_form.html" %}
+
+    <article class="info-card">
+      <div class="resource-icon"><i class="bi bi-headset"></i></div>
+      <h3 class="h5 mb-3">Canal de suporte</h3>
+      <p class="text-secondary">
+        O diagrama previa um `ContactForm`, entao a pagina foi estruturada com formulario real em Django e armazenamento em `MensagemContato`.
+      </p>
+      <div class="list-item">
+        <strong>E-mail</strong>
+        <div class="text-secondary">suporte@fintrack.local</div>
+      </div>
+      <div class="list-item">
+        <strong>Horario</strong>
+        <div class="text-secondary">Seg a Sex, 08h as 18h</div>
+      </div>
+      <div class="list-item">
+        <strong>Tempo medio</strong>
+        <div class="text-secondary">Ate 1 dia util</div>
+      </div>
+    </article>
+  </section>
+{% endblock %}

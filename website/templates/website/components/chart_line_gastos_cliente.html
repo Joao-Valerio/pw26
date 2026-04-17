@@ -1,0 +1,24 @@
+<div class="content-card">
+  <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap">
+    <div>
+      <div class="section-title">ChartLineGastosCliente</div>
+      <p class="section-copy">Leitura rapida do comportamento semanal dos gastos.</p>
+    </div>
+    <span class="tag">comparativo</span>
+  </div>
+
+  <div class="chart-shell">
+    <svg viewBox="0 0 320 150" class="w-100" role="img" aria-label="Grafico de linha de gastos">
+      <polyline points="{{ line_chart_points }}" fill="none" stroke="#f0c040" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></polyline>
+    </svg>
+
+    <div class="chart-legend">
+      {% for item in line_chart_items %}
+        <span class="chart-legend-item">
+          <span class="dot" style="background:#f0c040"></span>
+          {{ item.label }}: R$ {{ item.value|floatformat:0 }}
+        </span>
+      {% endfor %}
+    </div>
+  </div>
+</div>

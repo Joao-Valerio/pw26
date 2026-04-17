@@ -1,0 +1,49 @@
+{% extends "website/modelo.html" %}
+
+{% block title %}Relatorios | FinTrack Django{% endblock %}
+
+{% block page_actions %}
+  <a href="{% url 'recursos' %}" class="btn-outline-surface">Explorar recursos</a>
+{% endblock %}
+
+{% block content %}
+  <section class="content-card">
+    <div class="section-title mb-2">FormState</div>
+    <p class="section-copy mb-4">Estado de filtro do relatorio representado por um formulario Django.</p>
+    {% if form.errors %}
+      <div class="alert alert-danger mb-3" role="alert">
+        Ajuste os filtros: {{ form.errors.as_text }}
+      </div>
+    {% endif %}
+    <form method="get" class="row g-3">
+      {% for field in form %}
+        <div class="col-md-6">
+          <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+          {{ field }}
+        </div>
+      {% endfor %}
+      <div class="col-12">
+        <button type="submit" class="btn-accent">Aplicar filtros</button>
+      </div>
+    </form>
+  </section>
+
+  <section class="chart-grid">
+    {% include "website/components/chart_area_interactive.html" %}
+    {% include "website/components/chart_line_gastos_cliente.html" %}
+  </section>
+
+  <section class="row g-4">
+    {% for item in categorias_gasto %}
+      <div class="col-md-6 col-xl-4">
+        <article class="info-card">
+          <div class="resource-icon"><i class="bi bi-pie-chart-fill"></i></div>
+          <h3 class="h5">{{ item.categoria }}</h3>
+          <p class="text-secondary">Representacao equivalente ao tipo `ChartDataGasto` do diagrama.</p>
+          <div class="value fs-3 fw-bold">R$ {{ item.total }}</div>
+          <div class="text-secondary">{{ item.percentual }}% do total analisado</div>
+        </article>
+      </div>
+    {% endfor %}
+  </section>
+{% endblock %}

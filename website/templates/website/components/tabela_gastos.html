@@ -1,0 +1,49 @@
+<div class="content-card">
+  <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap mb-3">
+    <div>
+      <div class="section-title">TabelaGastos</div>
+      <p class="section-copy">Tabela principal para consulta dos lancamentos mais recentes.</p>
+    </div>
+    <span class="tag">{{ gastos|length }} registros</span>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead>
+        <tr>
+          <th>Titulo</th>
+          <th>Categoria</th>
+          <th>Data</th>
+          <th>Recorrente</th>
+          <th class="text-end">Valor</th>
+          <th class="text-end">Acoes</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for gasto in gastos %}
+          <tr>
+            <td>{{ gasto.titulo }}</td>
+            <td><span class="tag">{{ gasto.get_categoria_display }}</span></td>
+            <td>{{ gasto.data|date:"d/m/Y" }}</td>
+            <td>
+              {% if gasto.recorrente %}
+                <span class="text-success">Sim</span>
+              {% else %}
+                <span class="text-secondary">Nao</span>
+              {% endif %}
+            </td>
+            <td class="text-end fw-semibold">R$ {{ gasto.valor }}</td>
+            <td class="text-end">
+              <a href="{% url 'gasto_editar' gasto.pk %}" class="btn-outline-surface" style="padding: 6px 10px; font-size: 0.8rem;">Editar</a>
+              <a href="{% url 'gasto_excluir' gasto.pk %}" class="btn-outline-surface" style="padding: 6px 10px; font-size: 0.8rem; border-color: rgba(244, 116, 88, 0.35);">Excluir</a>
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="6" class="text-center text-secondary py-4">Nenhum gasto cadastrado.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>

@@ -1,0 +1,69 @@
+{% extends "website/modelo.html" %}
+
+{% block title %}Metas | FinTrack Django{% endblock %}
+
+{% block page_actions %}
+  <a href="{% url 'meta_nova' %}" class="btn-accent">Nova meta</a>
+  <a href="{% url 'dashboard' %}" class="btn-outline-surface">Voltar ao dashboard</a>
+{% endblock %}
+
+{% block content %}
+  <section class="card-grid">
+    <article class="mini-card">
+      <div class="label">Metas ativas</div>
+      <div class="value">{{ metas|length }}</div>
+      <div class="meta">Objetivos financeiros acompanhados no sistema.</div>
+    </article>
+    <article class="mini-card">
+      <div class="label">Total planejado</div>
+      <div class="value">R$ {{ total_metas }}</div>
+      <div class="meta">Soma de todos os valores alvo.</div>
+    </article>
+    <article class="mini-card">
+      <div class="label">Total guardado</div>
+      <div class="value">R$ {{ total_guardado }}</div>
+      <div class="meta">Valor acumulado ate o momento.</div>
+    </article>
+    <article class="mini-card">
+      <div class="label">Progresso medio</div>
+      <div class="value">{{ percentual_guardado }}%</div>
+      <div class="meta">Percentual geral de conclusao.</div>
+    </article>
+  </section>
+
+  <section class="row g-4">
+    {% for meta in metas %}
+      <div class="col-lg-4 col-md-6">
+        <article class="info-card">
+          <div class="resource-icon"><i class="bi bi-flag-fill"></i></div>
+          <h3 class="h5 mb-2">{{ meta.titulo }}</h3>
+          <p class="text-secondary mb-3">{{ meta.descricao|default:"Meta cadastrada para acompanhamento financeiro." }}</p>
+          <div class="d-flex justify-content-between mb-2">
+            <span class="text-secondary">R$ {{ meta.valor_atual }}</span>
+            <span class="text-secondary">R$ {{ meta.valor_alvo }}</span>
+          </div>
+          <div class="progress mb-3">
+            <div class="progress-bar" style="width: {{ meta.percentual_concluido }}%;"></div>
+          </div>
+          <div class="d-flex justify-content-between text-secondary small">
+            <span>{{ meta.percentual_concluido }}% concluido</span>
+            <span>Prazo: {{ meta.prazo|date:"d/m/Y" }}</span>
+          </div>
+          <div class="mt-3 small text-secondary">
+            Restante: R$ {{ meta.valor_restante }}
+          </div>
+          <div class="mt-3 d-flex flex-wrap gap-2">
+            <a href="{% url 'meta_editar' meta.pk %}" class="btn-outline-surface" style="padding: 8px 12px; font-size: 0.85rem;">Editar</a>
+            <a href="{% url 'meta_excluir' meta.pk %}" class="btn-outline-surface" style="padding: 8px 12px; font-size: 0.85rem; border-color: rgba(244, 116, 88, 0.35);">Excluir</a>
+          </div>
+        </article>
+      </div>
+    {% empty %}
+      <div class="col-12">
+        <div class="content-card text-center text-secondary py-5">
+          Nenhuma meta cadastrada. Use <strong>Nova meta</strong> para criar seu primeiro objetivo.
+        </div>
+      </div>
+    {% endfor %}
+  </section>
+{% endblock %}

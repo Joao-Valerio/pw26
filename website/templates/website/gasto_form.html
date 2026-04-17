@@ -1,0 +1,31 @@
+{% extends "website/modelo.html" %}
+
+{% block title %}{{ page_title }} | FinTrack Django{% endblock %}
+
+{% block page_actions %}
+  <a href="{% url 'gastos' %}" class="btn-outline-surface">Voltar aos gastos</a>
+{% endblock %}
+
+{% block content %}
+  <section class="form-shell">
+    <div class="section-title mb-2">{{ page_title }}</div>
+    <p class="section-copy mb-4">{{ page_subtitle }}</p>
+
+    <form method="post" class="row g-3">
+      {% csrf_token %}
+      {% for field in form %}
+        <div class="col-12 {% if field.name == 'valor' or field.name == 'data' or field.name == 'categoria' %}col-md-6{% endif %}">
+          <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+          {{ field }}
+          {% if field.errors %}
+            <div class="text-danger small mt-2">{{ field.errors|join:", " }}</div>
+          {% endif %}
+        </div>
+      {% endfor %}
+      <div class="col-12 d-flex flex-wrap gap-2">
+        <button type="submit" class="btn-accent">Salvar</button>
+        <a href="{% url 'gastos' %}" class="btn-outline-surface">Cancelar</a>
+      </div>
+    </form>
+  </section>
+{% endblock %}
