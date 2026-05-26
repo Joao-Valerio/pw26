@@ -1,0 +1,61 @@
+<div class="content-card">
+  <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap mb-3">
+    <div>
+      <div class="section-title">Movimentacoes</div>
+      <p class="section-copy">Historico de entradas e saidas registradas.</p>
+    </div>
+    <span class="tag">{{ movimentacoes|length }} registros</span>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table align-middle responsive-table">
+      <thead>
+        <tr>
+          <th>Tipo</th>
+          <th>Titulo</th>
+          <th>Categoria</th>
+          <th>Data</th>
+          <th class="text-end">Valor</th>
+          <th class="text-end">Acoes</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for mov in movimentacoes %}
+          <tr>
+            <td data-label="Tipo">
+              {% if mov.tipo == "entrada" %}
+                <span class="tag" style="background: rgba(34,197,94,0.12); color: #16a34a;">Entrada</span>
+              {% else %}
+                <span class="tag" style="background: rgba(244,116,88,0.12); color: #c94a38;">Saida</span>
+              {% endif %}
+            </td>
+            <td data-label="Titulo">{{ mov.titulo }}</td>
+            <td data-label="Categoria">
+              {% if mov.categoria %}
+                <span class="tag">{{ mov.get_categoria_display }}</span>
+              {% else %}
+                <span class="text-secondary">—</span>
+              {% endif %}
+            </td>
+            <td data-label="Data">{{ mov.data|date:"d/m/Y" }}</td>
+            <td data-label="Valor" class="text-end fw-semibold
+              {% if mov.tipo == 'entrada' %}text-success{% else %}text-danger{% endif %}">
+              {% if mov.tipo == "entrada" %}+{% else %}-{% endif %}R$ {{ mov.valor|moeda_br }}
+            </td>
+            <td data-label="Acoes" class="text-end">
+              <div class="table-actions">
+                <a href="{% url 'movimentacao_detalhe' mov.pk %}" class="btn-outline-surface" style="padding: 6px 10px; font-size: 0.8rem;">Detalhar</a>
+                <a href="{% url 'movimentacao_editar' mov.pk %}" class="btn-outline-surface" style="padding: 6px 10px; font-size: 0.8rem;">Editar</a>
+                <a href="{% url 'movimentacao_excluir' mov.pk %}" class="btn-outline-surface" style="padding: 6px 10px; font-size: 0.8rem; border-color: rgba(244, 116, 88, 0.35);">Excluir</a>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="6" class="text-center text-secondary py-4">Nenhuma movimentacao cadastrada.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>

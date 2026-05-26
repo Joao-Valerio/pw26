@@ -3,74 +3,82 @@
 {% block title %}Saldo | FinTrack Django{% endblock %}
 
 {% block page_actions %}
-  {% if saldo %}
-    <a href="{% url 'saldo_editar' saldo.pk %}" class="btn-accent">Editar saldo</a>
-  {% else %}
-    <a href="{% url 'saldo_novo' %}" class="btn-accent">Adicionar saldo</a>
-  {% endif %}
+  <a href="{% url 'movimentacao_nova' %}" class="btn-accent">Nova movimentacao</a>
+  <a href="{% url 'movimentacoes' %}" class="btn-outline-surface">Ver movimentacoes</a>
 {% endblock %}
 
 {% block content %}
   <section class="card-grid">
     <article class="mini-card">
       <div class="label">Saldo atual</div>
-      <div class="value">{% if saldo %}R$ {{ saldo.valor|moeda_br }}{% else %}R$ 0,00{% endif %}</div>
-      <div class="meta">Valor cadastrado para acompanhar sua reserva atual.</div>
+      <div class="value {% if saldo and saldo.valor >= 0 %}{% else %}text-danger{% endif %}">
+        R$ {% if saldo %}{{ saldo.valor|moeda_br }}{% else %}0,00{% endif %}
+      </div>
+      <div class="meta">Calculado automaticamente pelas movimentacoes.</div>
     </article>
     <article class="mini-card">
-      <div class="label">Status</div>
-      <div class="value">{% if saldo %}Ativo{% else %}Pendente{% endif %}</div>
-      <div class="meta">{% if saldo %}Seu saldo ja esta disponivel no sistema.{% else %}Cadastre um saldo para comecar.{% endif %}</div>
+      <div class="label">Total entradas</div>
+      <div class="value" style="color: var(--success, #22c55e);">R$ {{ total_entradas|moeda_br }}</div>
+      <div class="meta">Soma de todas as entradas registradas.</div>
+    </article>
+    <article class="mini-card">
+      <div class="label">Total saidas</div>
+      <div class="value" style="color: var(--danger, #f47458);">R$ {{ total_saidas|moeda_br }}</div>
+      <div class="meta">Soma de todos os gastos registrados.</div>
     </article>
     <article class="mini-card">
       <div class="label">Ultima atualizacao</div>
       <div class="value">{% if saldo %}{{ saldo.updated_at|date:"d/m/Y" }}{% else %}--{% endif %}</div>
-      <div class="meta">Data da ultima alteracao do saldo cadastrado.</div>
-    </article>
-    <article class="mini-card">
-      <div class="label">Acao rapida</div>
-      <div class="value">{% if saldo %}Editar{% else %}Criar{% endif %}</div>
-      <div class="meta">{% if saldo %}Atualize o valor sempre que houver mudanca.{% else %}Adicione agora o valor disponivel em conta.{% endif %}</div>
+      <div class="meta">Data do ultimo recalculo automatico.</div>
     </article>
   </section>
 
-  {% if saldo %}
-    <section class="content-grid">
-      <article class="content-card">
-        <div class="section-title mb-2">Resumo do saldo</div>
-        <p class="section-copy mb-4">Este valor representa o saldo atual informado por voce no sistema.</p>
-        <div class="list-card">
-          <div class="list-item">
-            <strong>Valor cadastrado</strong>
-            <div class="mt-2 fs-3 fw-bold">R$ {{ saldo.valor|moeda_br }}</div>
-          </div>
-          <div class="list-item">
-            <strong>Atualizado em</strong>
-            <div class="text-secondary mt-2">{{ saldo.updated_at|date:"d/m/Y H:i" }}</div>
-          </div>
+  <section class="content-grid">
+    <article class="content-card">
+      <div class="section-title mb-2">Resumo financeiro</div>
+      <p class="section-copy mb-4">O saldo e calculado automaticamente com base nas movimentacoes registradas.</p>
+      <div class="list-card">
+        <div class="list-item">
+          <strong>Entradas</strong>
+          <div class="mt-2 fw-semibold" style="color: #16a34a;">+ R$ {{ total_entradas|moeda_br }}</div>
         </div>
-      </article>
+        <div class="list-item">
+          <strong>Saidas</strong>
+          <div class="mt-2 fw-semibold" style="color: #c94a38;">- R$ {{ total_saidas|moeda_br }}</div>
+        </div>
+        <div class="list-item">
+          <strong>Saldo</strong>
+          <div class="mt-2 fs-4 fw-bold">R$ {% if saldo %}{{ saldo.valor|moeda_br }}{% else %}0,00{% endif %}</div>
+        </div>
+      </div>
+    </article>
 
-      <article class="info-card">
-        <div class="resource-icon"><i class="bi bi-piggy-bank-fill"></i></div>
-        <h3 class="h5 mb-3">Gerenciamento do saldo</h3>
-        <p class="text-secondary mb-4">
-          Use esta area para manter o saldo base da sua conta atualizado e ter uma referencia rapida dentro da plataforma.
-        </p>
-        <div class="d-flex flex-wrap gap-2">
-          <a href="{% url 'saldo_editar' saldo.pk %}" class="btn-accent">Editar saldo</a>
-          <a href="{% url 'saldo_excluir' saldo.pk %}" class="btn-outline-surface" style="border-color: rgba(244, 116, 88, 0.35);">Excluir saldo</a>
+    <article class="content-card">
+      <div class="section-title mb-2">Ultimas movimentacoes</div>
+      <p class="section-copy mb-3">Historico recente de entradas e saidas.</p>
+      {% if ultimas_movimentacoes %}
+        <div class="list-card">
+          {% for mov in ultimas_movimentacoes %}
+            <div class="list-item">
+              <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap">
+                <div>
+                  <div class="fw-semibold">{{ mov.titulo }}</div>
+                  <div class="text-secondary" style="font-size: 0.85rem;">{{ mov.data|date:"d/m/Y" }}{% if mov.categoria %} · {{ mov.get_categoria_display }}{% endif %}</div>
+                </div>
+                <div class="fw-bold {% if mov.tipo == 'entrada' %}text-success{% else %}text-danger{% endif %}">
+                  {% if mov.tipo == "entrada" %}+{% else %}-{% endif %}R$ {{ mov.valor|moeda_br }}
+                </div>
+              </div>
+            </div>
+          {% endfor %}
         </div>
-      </article>
-    </section>
-  {% else %}
-    <section class="content-card text-center py-5">
-      <div class="resource-icon mx-auto"><i class="bi bi-wallet2"></i></div>
-      <div class="section-title mt-3 mb-2">Nenhum saldo cadastrado</div>
-      <p class="section-copy mb-4">
-        Adicione seu saldo atual para manter a area financeira mais completa e alinhada com sua realidade.
-      </p>
-      <a href="{% url 'saldo_novo' %}" class="btn-accent">Adicionar saldo</a>
-    </section>
-  {% endif %}
+        <div class="mt-3">
+          <a href="{% url 'movimentacoes' %}" class="btn-outline-surface">Ver todas</a>
+        </div>
+      {% else %}
+        <p class="text-secondary">Nenhuma movimentacao registrada ainda.</p>
+        <a href="{% url 'movimentacao_nova' %}" class="btn-accent">Criar primeira movimentacao</a>
+      {% endif %}
+    </article>
+  </section>
 {% endblock %}

@@ -1,0 +1,54 @@
+{% extends "website/modelo.html" %}
+
+{% block title %}Movimentacoes | FinTrack Django{% endblock %}
+
+{% block page_actions %}
+  <a href="{% url 'movimentacao_nova' %}" class="btn-accent">Nova movimentacao</a>
+  <a href="{% url 'relatorios' %}" class="btn-outline-surface">Ver relatorios</a>
+{% endblock %}
+
+{% block content %}
+  <section class="card-grid">
+    <article class="mini-card">
+      <div class="label">Lancamentos</div>
+      <div class="value">{{ movimentacoes|length }}</div>
+      <div class="meta">Total de movimentacoes registradas.</div>
+    </article>
+    <article class="mini-card">
+      <div class="label">Total entradas</div>
+      <div class="value" style="color: var(--success, #22c55e);">R$ {{ total_entradas|moeda_br }}</div>
+      <div class="meta">Soma de todas as entradas.</div>
+    </article>
+    <article class="mini-card">
+      <div class="label">Total saidas</div>
+      <div class="value" style="color: var(--danger, #f47458);">R$ {{ total_saidas|moeda_br }}</div>
+      <div class="meta">Soma de todas as saidas.</div>
+    </article>
+    <article class="mini-card">
+      <div class="label">Saldo atual</div>
+      <div class="value">R$ {% if saldo %}{{ saldo.valor|moeda_br }}{% else %}0,00{% endif %}</div>
+      <div class="meta">Calculado automaticamente.</div>
+    </article>
+  </section>
+
+  {% include "website/components/tabela_movimentacoes.html" with movimentacoes=movimentacoes %}
+
+  {% if categorias_gasto %}
+    <section class="content-grid">
+      {% include "website/components/chart_area_interactive.html" %}
+
+      <div class="list-card">
+        <div class="section-title mb-2">Categorias de saidas</div>
+        <p class="section-copy mb-3">Distribuicao de gastos por categoria.</p>
+        {% for item in categorias_gasto %}
+          <div class="list-item">
+            <div class="d-flex justify-content-between gap-3">
+              <span>{{ item.categoria }}</span>
+              <strong>R$ {{ item.total|moeda_br }}</strong>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </section>
+  {% endif %}
+{% endblock %}

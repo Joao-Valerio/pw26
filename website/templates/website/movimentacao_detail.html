@@ -1,0 +1,80 @@
+{% extends "website/modelo.html" %}
+
+{% block title %}{{ movimentacao.titulo }} | FinTrack Django{% endblock %}
+
+{% block page_actions %}
+  <a href="{% url 'movimentacao_editar' movimentacao.pk %}" class="btn-accent">Editar</a>
+  <a href="{% url 'movimentacoes' %}" class="btn-outline-surface">Voltar</a>
+{% endblock %}
+
+{% block content %}
+  <section class="content-grid">
+    <article class="content-card">
+      <div class="section-title mb-2">{{ movimentacao.titulo }}</div>
+      <p class="section-copy mb-4">{{ page_subtitle }}</p>
+
+      <div class="list-card">
+        <div class="list-item">
+          <strong>Tipo</strong>
+          <div class="mt-2">
+            {% if movimentacao.tipo == "entrada" %}
+              <span class="tag" style="background: rgba(34,197,94,0.12); color: #16a34a;">Entrada</span>
+            {% else %}
+              <span class="tag" style="background: rgba(244,116,88,0.12); color: #c94a38;">Saida</span>
+            {% endif %}
+          </div>
+        </div>
+        <div class="list-item">
+          <strong>Valor</strong>
+          <div class="mt-2 fs-3 fw-bold
+            {% if movimentacao.tipo == 'entrada' %}text-success{% else %}text-danger{% endif %}">
+            {% if movimentacao.tipo == "entrada" %}+{% else %}-{% endif %}R$ {{ movimentacao.valor|moeda_br }}
+          </div>
+        </div>
+        <div class="list-item">
+          <strong>Data</strong>
+          <div class="text-secondary mt-2">{{ movimentacao.data|date:"d/m/Y" }}</div>
+        </div>
+        {% if movimentacao.categoria %}
+          <div class="list-item">
+            <strong>Categoria</strong>
+            <div class="mt-2"><span class="tag">{{ movimentacao.get_categoria_display }}</span></div>
+          </div>
+        {% endif %}
+        {% if movimentacao.observacao %}
+          <div class="list-item">
+            <strong>Observacao</strong>
+            <div class="text-secondary mt-2">{{ movimentacao.observacao }}</div>
+          </div>
+        {% endif %}
+        <div class="list-item">
+          <strong>Registrado em</strong>
+          <div class="text-secondary mt-2">{{ movimentacao.created_at|date:"d/m/Y H:i" }}</div>
+        </div>
+      </div>
+    </article>
+
+    <article class="info-card">
+      <div class="resource-icon">
+        {% if movimentacao.tipo == "entrada" %}
+          <i class="bi bi-arrow-down-circle-fill" style="color: #16a34a;"></i>
+        {% else %}
+          <i class="bi bi-arrow-up-circle-fill" style="color: #c94a38;"></i>
+        {% endif %}
+      </div>
+      <h3 class="h5 mb-3">{{ movimentacao.get_tipo_display }}</h3>
+      <p class="text-secondary mb-4">
+        {% if movimentacao.tipo == "entrada" %}
+          Esta movimentacao foi somada ao seu saldo.
+        {% else %}
+          Este valor foi descontado do seu saldo.
+        {% endif %}
+      </p>
+      <div class="d-flex flex-wrap gap-2">
+        <a href="{% url 'movimentacao_editar' movimentacao.pk %}" class="btn-accent">Editar</a>
+        <a href="{% url 'movimentacao_excluir' movimentacao.pk %}" class="btn-outline-surface"
+           style="border-color: rgba(244, 116, 88, 0.35);">Excluir</a>
+      </div>
+    </article>
+  </section>
+{% endblock %}

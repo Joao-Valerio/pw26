@@ -2,6 +2,7 @@ from decimal import Decimal
 
 from django.conf import settings
 from django.db import models
+from django.db.models import Sum
 
 
 class TimeStampedModel(models.Model):
@@ -12,7 +13,11 @@ class TimeStampedModel(models.Model):
         abstract = True
 
 
-class Gasto(TimeStampedModel):
+class Movimentacao(TimeStampedModel):
+    class Tipo(models.TextChoices):
+        ENTRADA = "entrada", "Entrada"
+        SAIDA = "saida", "Saída"
+
     class Categoria(models.TextChoices):
         MORADIA = "moradia", "Moradia"
         ALIMENTACAO = "alimentacao", "Alimentacao"
@@ -27,26 +32,58 @@ class Gasto(TimeStampedModel):
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name="gastos",
+        related_name="movimentacoes",
+    )
+    tipo = models.CharField(
+        max_length=10,
+        choices=Tipo.choices,
+        default=Tipo.SAIDA,
     )
     titulo = models.CharField(max_length=120)
     categoria = models.CharField(
         max_length=20,
         choices=Categoria.choices,
-        default=Categoria.OUTROS,
+        blank=True,
+        default="",
     )
     valor = models.DecimalField(max_digits=10, decimal_places=2)
     data = models.DateField()
-    recorrente = models.BooleanField(default=False)
     observacao = models.TextField(blank=True)
 
     class Meta:
         ordering = ["-data", "-created_at"]
-        verbose_name = "Gasto"
-        verbose_name_plural = "Gastos"
+        verbose_name = "Movimentacao"
+        verbose_name_plural = "Movimentacoes"
 
     def __str__(self):
-        return f"{self.titulo} - R$ {self.valor}"
+        return f"[{self.get_tipo_display()}] {self.titulo} - R$ {self.valor}"
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        _recalcular_saldo(self.usuario)
+
+    def delete(self, *args, **kwargs):
+        usuario = self.usuario
+        super().delete(*args, **kwargs)
+        _recalcular_saldo(usuario)
+
+
+def _recalcular_saldo(usuario):
+    if usuario is None:
+        return
+    saldo, _ = Saldo.objects.get_or_create(usuario=usuario, defaults={"valor": Decimal("0")})
+    total_entradas = (
+        Movimentacao.objects.filter(usuario=usuario, tipo=Movimentacao.Tipo.ENTRADA)
+        .aggregate(total=Sum("valor"))["total"]
+        or Decimal("0")
+    )
+    total_saidas = (
+        Movimentacao.objects.filter(usuario=usuario, tipo=Movimentacao.Tipo.SAIDA)
+        .aggregate(total=Sum("valor"))["total"]
+        or Decimal("0")
+    )
+    saldo.valor = total_entradas - total_saidas
+    saldo.save(update_fields=["valor", "updated_at"])
 
 
 class Meta(TimeStampedModel):

@@ -12,31 +12,27 @@ from django.views.generic.edit import FormView
 from .forms import (
     CadastroForm,
     ContatoForm,
-    DELETE_GASTO,
     DELETE_META,
-    DELETE_SALDO,
+    DELETE_MOVIMENTACAO,
     DeleteShellContextMixin,
     FormShellContextMixin,
-    GastoForm,
     LoginForm,
     MetaAdicionarValorForm,
     MetaFinanceiraForm,
+    MovimentacaoForm,
     RelatorioFiltroForm,
-    SaldoForm,
     SHELL_CADASTRO,
     SHELL_CONTATO,
-    SHELL_GASTO_CREATE,
-    SHELL_GASTO_UPDATE,
     SHELL_LOGIN,
     SHELL_META_ADD_VALOR,
     SHELL_META_CREATE,
     SHELL_META_UPDATE,
-    SHELL_SALDO_CREATE,
-    SHELL_SALDO_UPDATE,
+    SHELL_MOVIMENTACAO_CREATE,
+    SHELL_MOVIMENTACAO_UPDATE,
     TEMPLATE_CONFIRM_DELETE,
     TEMPLATE_FORM_SHELL,
 )
-from .models import Gasto, Meta, Saldo
+from .models import Meta, Movimentacao, Saldo
 from .services import build_dashboard_context
 
 
@@ -46,10 +42,8 @@ class AuthPageMixin(LoginRequiredMixin):
 
 class BasePageMixin:
     page_title = "Painel financeiro"
-    page_subtitle = "Acompanhe indicadores, metas e gastos em um unico fluxo."
+    page_subtitle = "Acompanhe indicadores, metas e movimentacoes em um unico fluxo."
     show_sidebar = True
-    # Quando show_sidebar é False, o modelo usa .auth-wrapper (max-width 560px) para login/cadastro.
-    # Landing pages devem definir True para ocupar a largura do painel.
     skip_auth_wrapper = False
 
     def get_context_data(self, **kwargs):
@@ -72,22 +66,27 @@ class DashboardView(AuthPageMixin, BasePageMixin, TemplateView):
         return context
 
 
-class GastosView(AuthPageMixin, BasePageMixin, ListView):
-    model = Gasto
-    template_name = "website/gastos.html"
-    context_object_name = "gastos"
-    page_title = "Gastos"
-    page_subtitle = "Tabela com os principais lancamentos e distribuicao por categoria."
+class MovimentacoesView(AuthPageMixin, BasePageMixin, ListView):
+    model = Movimentacao
+    template_name = "website/movimentacoes.html"
+    context_object_name = "movimentacoes"
+    page_title = "Movimentacoes"
+    page_subtitle = "Entradas e saidas registradas para acompanhar seu saldo."
 
     def get_queryset(self):
-        return Gasto.objects.filter(usuario=self.request.user).order_by("-data", "-created_at")
+        return Movimentacao.objects.filter(usuario=self.request.user).order_by("-data", "-created_at")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        movimentacoes = context["object_list"]
+        context["movimentacoes"] = movimentacoes
+        entradas = [m for m in movimentacoes if m.tipo == Movimentacao.Tipo.ENTRADA]
+        saidas = [m for m in movimentacoes if m.tipo == Movimentacao.Tipo.SAIDA]
+        context["total_entradas"] = sum(m.valor for m in entradas)
+        context["total_saidas"] = sum(m.valor for m in saidas)
+        context["saldo"] = Saldo.objects.filter(usuario=self.request.user).first()
         dashboard_ctx = build_dashboard_context(self.request.user)
-        dashboard_ctx.pop("gastos", None)
-        context.update(dashboard_ctx)
-        context["gastos"] = context["object_list"]
+        context["categorias_gasto"] = dashboard_ctx.get("categorias_gasto", [])
         return context
 
 
@@ -199,65 +198,74 @@ class UsuarioLogoutView(DjangoLogoutView):
     next_page = reverse_lazy("login")
 
 
-class GastoUserMixin(AuthPageMixin):
-    model = Gasto
+# --- Movimentacao ---
+
+class MovimentacaoUserMixin(AuthPageMixin):
+    model = Movimentacao
 
     def get_queryset(self):
-        return Gasto.objects.filter(usuario=self.request.user)
+        return Movimentacao.objects.filter(usuario=self.request.user)
 
 
-class GastoCreateView(FormShellContextMixin, AuthPageMixin, BasePageMixin, CreateView):
-    model = Gasto
-    form_class = GastoForm
+class MovimentacaoCreateView(FormShellContextMixin, AuthPageMixin, BasePageMixin, CreateView):
+    model = Movimentacao
+    form_class = MovimentacaoForm
     template_name = TEMPLATE_FORM_SHELL
-    form_shell_config = SHELL_GASTO_CREATE
+    form_shell_config = SHELL_MOVIMENTACAO_CREATE
 
     def form_valid(self, form):
         form.instance.usuario = self.request.user
-        messages.success(self.request, "Gasto registrado com sucesso.")
+        messages.success(self.request, "Movimentacao registrada com sucesso.")
         return super().form_valid(form)
 
     def get_success_url(self):
-        return reverse_lazy("gastos")
+        return reverse_lazy("movimentacoes")
 
 
-class GastoUpdateView(FormShellContextMixin, GastoUserMixin, BasePageMixin, UpdateView):
-    form_class = GastoForm
+class MovimentacaoUpdateView(FormShellContextMixin, MovimentacaoUserMixin, BasePageMixin, UpdateView):
+    form_class = MovimentacaoForm
     template_name = TEMPLATE_FORM_SHELL
-    form_shell_config = SHELL_GASTO_UPDATE
+    form_shell_config = SHELL_MOVIMENTACAO_UPDATE
 
     def form_valid(self, form):
-        messages.success(self.request, "Gasto atualizado com sucesso.")
+        messages.success(self.request, "Movimentacao atualizada com sucesso.")
         return super().form_valid(form)
 
     def get_success_url(self):
-        return reverse_lazy("gastos")
+        return reverse_lazy("movimentacoes")
 
 
-class GastoDeleteView(DeleteShellContextMixin, GastoUserMixin, BasePageMixin, DeleteView):
+class MovimentacaoDeleteView(DeleteShellContextMixin, MovimentacaoUserMixin, BasePageMixin, DeleteView):
     template_name = TEMPLATE_CONFIRM_DELETE
-    delete_shell_config = DELETE_GASTO
-    context_object_name = "gasto"
-    success_url = reverse_lazy("gastos")
+    delete_shell_config = DELETE_MOVIMENTACAO
+    context_object_name = "movimentacao"
+    success_url = reverse_lazy("movimentacoes")
 
     def delete(self, request, *args, **kwargs):
-        messages.success(self.request, "Gasto excluido com sucesso.")
+        messages.success(self.request, "Movimentacao excluida com sucesso.")
         return super().delete(request, *args, **kwargs)
 
 
-class GastoDetailView(GastoUserMixin, BasePageMixin, DetailView):
-    template_name = "website/gasto_detail.html"
-    context_object_name = "gasto"
-    page_title = "Detalhe do gasto"
+class MovimentacaoDetailView(MovimentacaoUserMixin, BasePageMixin, DetailView):
+    template_name = "website/movimentacao_detail.html"
+    context_object_name = "movimentacao"
+    page_title = "Detalhe da movimentacao"
     page_subtitle = "Consulte os dados deste lancamento."
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        g = self.object
-        context["page_title"] = g.titulo
-        context["page_subtitle"] = f"{g.get_categoria_display()} · {g.data.strftime('%d/%m/%Y')}"
+        m = self.object
+        context["page_title"] = m.titulo
+        tipo_label = m.get_tipo_display()
+        data_label = m.data.strftime("%d/%m/%Y")
+        if m.tipo == Movimentacao.Tipo.SAIDA and m.categoria:
+            context["page_subtitle"] = f"{tipo_label} · {m.get_categoria_display()} · {data_label}"
+        else:
+            context["page_subtitle"] = f"{tipo_label} · {data_label}"
         return context
 
+
+# --- Metas ---
 
 class MetaUserMixin(AuthPageMixin):
     model = Meta
@@ -330,67 +338,25 @@ class MetaDeleteView(DeleteShellContextMixin, MetaUserMixin, BasePageMixin, Dele
         return super().delete(request, *args, **kwargs)
 
 
-class SaldoUserMixin(AuthPageMixin):
-    model = Saldo
-
-    def get_queryset(self):
-        return Saldo.objects.filter(usuario=self.request.user)
-
+# --- Saldo (somente leitura — calculado automaticamente pelas movimentações) ---
 
 class SaldoView(AuthPageMixin, BasePageMixin, TemplateView):
     template_name = "website/saldo.html"
     page_title = "Saldo"
-    page_subtitle = "Cadastre e acompanhe o saldo atual disponivel na sua conta."
+    page_subtitle = "Saldo calculado automaticamente a partir das suas movimentacoes."
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["saldo"] = Saldo.objects.filter(usuario=self.request.user).first()
+        saldo = Saldo.objects.filter(usuario=self.request.user).first()
+        context["saldo"] = saldo
+        movimentacoes = Movimentacao.objects.filter(usuario=self.request.user).order_by("-data", "-created_at")
+        entradas = movimentacoes.filter(tipo=Movimentacao.Tipo.ENTRADA)
+        saidas = movimentacoes.filter(tipo=Movimentacao.Tipo.SAIDA)
+        from django.db.models import Sum
+        context["total_entradas"] = entradas.aggregate(t=Sum("valor"))["t"] or 0
+        context["total_saidas"] = saidas.aggregate(t=Sum("valor"))["t"] or 0
+        context["ultimas_movimentacoes"] = movimentacoes[:10]
         return context
-
-
-class SaldoCreateView(FormShellContextMixin, AuthPageMixin, BasePageMixin, CreateView):
-    model = Saldo
-    form_class = SaldoForm
-    template_name = TEMPLATE_FORM_SHELL
-    form_shell_config = SHELL_SALDO_CREATE
-
-    def dispatch(self, request, *args, **kwargs):
-        if Saldo.objects.filter(usuario=request.user).exists():
-            messages.info(request, "Voce ja possui um saldo cadastrado.")
-            return redirect("saldo")
-        return super().dispatch(request, *args, **kwargs)
-
-    def form_valid(self, form):
-        form.instance.usuario = self.request.user
-        messages.success(self.request, "Saldo cadastrado com sucesso.")
-        return super().form_valid(form)
-
-    def get_success_url(self):
-        return reverse_lazy("saldo")
-
-
-class SaldoUpdateView(FormShellContextMixin, SaldoUserMixin, BasePageMixin, UpdateView):
-    form_class = SaldoForm
-    template_name = TEMPLATE_FORM_SHELL
-    form_shell_config = SHELL_SALDO_UPDATE
-
-    def form_valid(self, form):
-        messages.success(self.request, "Saldo atualizado com sucesso.")
-        return super().form_valid(form)
-
-    def get_success_url(self):
-        return reverse_lazy("saldo")
-
-
-class SaldoDeleteView(DeleteShellContextMixin, SaldoUserMixin, BasePageMixin, DeleteView):
-    template_name = TEMPLATE_CONFIRM_DELETE
-    delete_shell_config = DELETE_SALDO
-    context_object_name = "saldo"
-    success_url = reverse_lazy("saldo")
-
-    def delete(self, request, *args, **kwargs):
-        messages.success(self.request, "Saldo excluido com sucesso.")
-        return super().delete(request, *args, **kwargs)
 
 
 class InicioView(BasePageMixin, TemplateView):

@@ -3,9 +3,10 @@ from datetime import date, timedelta
 from decimal import Decimal
 from math import cos, radians, sin
 
+from django.db.models import Sum
 from django.db.utils import OperationalError, ProgrammingError
 
-from .models import Gasto, Meta
+from .models import Meta, Movimentacao, Saldo
 
 _MESES_ABREV = (
     "jan",
@@ -66,14 +67,29 @@ def _last_n_calendar_months(today, n=6):
     return list(reversed(res))
 
 
-def get_gastos(user, *, desde=None, categoria=None):
+def get_saidas(user, *, desde=None, categoria=None):
+    """Retorna as saídas (gastos) do usuário para análise de despesas."""
     if not user.is_authenticated:
         return []
-    qs = Gasto.objects.filter(usuario=user).order_by("-data")
+    qs = Movimentacao.objects.filter(
+        usuario=user, tipo=Movimentacao.Tipo.SAIDA
+    ).order_by("-data")
     if desde is not None:
         qs = qs.filter(data__gte=desde)
     if categoria:
         qs = qs.filter(categoria=categoria)
+    return _safe_list(qs)
+
+
+def get_entradas(user, *, desde=None):
+    """Retorna as entradas do usuário."""
+    if not user.is_authenticated:
+        return []
+    qs = Movimentacao.objects.filter(
+        usuario=user, tipo=Movimentacao.Tipo.ENTRADA
+    ).order_by("-data")
+    if desde is not None:
+        qs = qs.filter(data__gte=desde)
     return _safe_list(qs)
 
 
@@ -83,14 +99,14 @@ def get_metas(user):
     return _safe_list(Meta.objects.filter(usuario=user).order_by("prazo"))
 
 
-def _monthly_series(gastos, today=None):
+def _monthly_series(saidas, today=None):
     today = today or date.today()
     months_keys = _last_n_calendar_months(today, 6)
     totals = {key: Decimal("0") for key in months_keys}
-    for gasto in gastos:
-        key = (gasto.data.year, gasto.data.month)
+    for saida in saidas:
+        key = (saida.data.year, saida.data.month)
         if key in totals:
-            totals[key] += gasto.valor
+            totals[key] += saida.valor
 
     return [
         ChartDataItem(
@@ -102,22 +118,22 @@ def _monthly_series(gastos, today=None):
     ]
 
 
-def _weekly_series(gastos, today=None):
+def _weekly_series(saidas, today=None):
     today = today or date.today()
     items = []
     for w in range(3, -1, -1):
         newest = today - timedelta(days=7 * w)
         oldest = today - timedelta(days=7 * (w + 1) - 1)
-        total = sum(float(g.valor) for g in gastos if oldest <= g.data <= newest)
+        total = sum(float(g.valor) for g in saidas if oldest <= g.data <= newest)
         items.append(ChartDataItem(label=f"Sem {4 - w}", value=total))
     return items
 
 
-def _category_breakdown(gastos):
+def _category_breakdown(saidas):
     totais = {}
-    for gasto in gastos:
-        label = gasto.get_categoria_display()
-        totais[label] = totais.get(label, Decimal("0.00")) + gasto.valor
+    for saida in saidas:
+        label = saida.get_categoria_display()
+        totais[label] = totais.get(label, Decimal("0.00")) + saida.valor
 
     total_geral = sum(totais.values(), Decimal("0.00")) or Decimal("1.00")
     itens = []
@@ -219,35 +235,42 @@ def build_dashboard_context(user, *, periodo_dias=None, categoria=None):
     if periodo_dias is not None:
         desde = date.today() - timedelta(days=int(periodo_dias))
 
-    gastos = get_gastos(user, desde=desde, categoria=categoria or None)
+    saidas = get_saidas(user, desde=desde, categoria=categoria or None)
+    entradas = get_entradas(user, desde=desde)
     metas = get_metas(user)
 
-    total_gastos = sum(gasto.valor for gasto in gastos)
-    gasto_medio = total_gastos / Decimal(len(gastos) or 1)
+    total_saidas = sum(s.valor for s in saidas)
+    total_entradas = sum(e.valor for e in entradas)
+    gasto_medio = total_saidas / Decimal(len(saidas) or 1)
     total_metas = sum(meta.valor_alvo for meta in metas)
     total_guardado = sum(meta.valor_atual for meta in metas)
-    recorrentes_count = sum(1 for gasto in gastos if gasto.recorrente)
 
-    area_items = _monthly_series(gastos)
-    line_items = _weekly_series(gastos)
+    area_items = _monthly_series(saidas)
+    line_items = _weekly_series(saidas)
     line_pts = build_chart_points(line_items, width=320, height=150)
 
+    try:
+        saldo_obj = Saldo.objects.filter(usuario=user).first() if user.is_authenticated else None
+    except (OperationalError, Exception):
+        saldo_obj = None
+
     return {
-        "gastos": gastos,
-        "metas": metas,
-        "ultimos_gastos": gastos[:5],
-        "categorias_gasto": _category_breakdown(gastos),
-        "total_gastos": total_gastos,
+        "gastos": saidas,
+        "ultimos_gastos": saidas[:5],
+        "categorias_gasto": _category_breakdown(saidas),
+        "total_gastos": total_saidas,
+        "total_saidas": total_saidas,
+        "total_entradas": total_entradas,
+        "saldo": saldo_obj,
         "gasto_medio": gasto_medio,
         "total_metas": total_metas,
         "total_guardado": total_guardado,
         "percentual_guardado": int((total_guardado / (total_metas or Decimal("1.00"))) * 100),
-        "recorrentes_count": recorrentes_count,
         "area_chart_items": area_items,
         "pie_chart_segments": build_pie_segments(
             [
                 ChartDataItem(label=item.categoria, value=float(item.total))
-                for item in _category_breakdown(gastos)
+                for item in _category_breakdown(saidas)
             ],
             width=200,
             height=200,
@@ -267,4 +290,5 @@ def build_dashboard_context(user, *, periodo_dias=None, categoria=None):
             }
             for i, item in enumerate(line_items)
         ],
+        "metas": metas,
     }

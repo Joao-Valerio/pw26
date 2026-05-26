@@ -11,7 +11,7 @@ from typing import Any, Callable
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Column, Field, Layout, Row
 
-from .models import Gasto, MensagemContato, Meta, Saldo
+from .models import MensagemContato, Meta, Movimentacao, Saldo
 
 
 class ISODateInput(forms.DateInput):
@@ -103,7 +103,7 @@ class ContatoForm(forms.ModelForm):
         )
 
 
-class GastoForm(forms.ModelForm):
+class MovimentacaoForm(forms.ModelForm):
     data = forms.DateField(
         label="Data",
         input_formats=["%Y-%m-%d"],
@@ -111,26 +111,38 @@ class GastoForm(forms.ModelForm):
     )
 
     class Meta:
-        model = Gasto
-        fields = ("titulo", "categoria", "valor", "data", "recorrente", "observacao")
+        model = Movimentacao
+        fields = ("tipo", "titulo", "categoria", "valor", "data", "observacao")
         widgets = {
             "observacao": forms.Textarea(attrs={"rows": 3}),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields["categoria"].required = False
+        self.fields["categoria"].choices = [("", "---------")] + list(Movimentacao.Categoria.choices)
         self.helper = _crispy_helper(
             Layout(
-                Row(Column(Field("titulo"), css_class="col-12")),
                 Row(
-                    Column(Field("categoria"), css_class="col-12 col-md-6"),
+                    Column(Field("tipo"), css_class="col-12 col-md-6"),
                     Column(Field("valor"), css_class="col-12 col-md-6"),
                 ),
-                Row(Column(Field("data"), css_class="col-12 col-md-6")),
-                Row(Column(Field("recorrente"), css_class="col-12")),
+                Row(Column(Field("titulo"), css_class="col-12")),
+                Row(
+                    Column(Field("categoria"), css_class="col-12 col-md-6", wrapper_id="wrapper_categoria"),
+                    Column(Field("data"), css_class="col-12 col-md-6"),
+                ),
                 Row(Column(Field("observacao"), css_class="col-12")),
             )
         )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        tipo = cleaned_data.get("tipo")
+        categoria = cleaned_data.get("categoria")
+        if tipo == Movimentacao.Tipo.SAIDA and not categoria:
+            self.add_error("categoria", "Informe a categoria para uma saida.")
+        return cleaned_data
 
 
 class MetaFinanceiraForm(forms.ModelForm):
@@ -180,28 +192,6 @@ class MetaAdicionarValorForm(forms.Form):
         )
 
 
-class SaldoForm(forms.ModelForm):
-    valor = forms.DecimalField(
-        label="Saldo atual",
-        min_value=0,
-        decimal_places=2,
-        max_digits=12,
-        widget=forms.NumberInput(attrs={"step": "0.01", "min": "0"}),
-    )
-
-    class Meta:
-        model = Saldo
-        fields = ("valor",)
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.helper = _crispy_helper(
-            Layout(
-                Row(Column(Field("valor"), css_class="col-12 col-md-6")),
-            )
-        )
-
-
 class RelatorioFiltroForm(forms.Form):
     periodo = forms.ChoiceField(
         label="Periodo",
@@ -216,7 +206,7 @@ class RelatorioFiltroForm(forms.Form):
         required=False,
         choices=(
             ("", "Todas as categorias"),
-            *Gasto.Categoria.choices,
+            *Movimentacao.Categoria.choices,
         ),
     )
 
@@ -246,7 +236,7 @@ def _money_br(value: Any) -> str:
     return s.replace(",", "X").replace(".", ",").replace("X", ".")
 
 
-def _gasto_delete_confirmation(obj: Gasto) -> SafeString:
+def _movimentacao_delete_confirmation(obj: Movimentacao) -> SafeString:
     return format_html(
         "Tem certeza que deseja excluir <strong>{}</strong> (R$ {} em {})? "
         "Esta acao nao pode ser desfeita.",
@@ -363,7 +353,7 @@ class DeleteShellContextMixin:
         return context
 
 
-# --- Instâncias usadas pelas CBVs (substitui títulos/URLs nos templates por recurso) ---
+# --- Instâncias usadas pelas CBVs ---
 
 SHELL_LOGIN = FormShellConfig(
     page_title="Login",
@@ -377,28 +367,30 @@ SHELL_LOGIN = FormShellConfig(
 
 SHELL_CADASTRO = FormShellConfig(
     page_title="Criar conta",
-    page_subtitle="Cadastre-se para começar a registrar gastos, metas e relatorios.",
+    page_subtitle="Cadastre-se para começar a registrar movimentacoes, metas e relatorios.",
     submit_label="Criar conta",
     actions_container_class="d-grid",
     form_variant="auth_cadastro",
 )
 
-SHELL_GASTO_CREATE = FormShellConfig(
-    page_title="Novo gasto",
-    page_subtitle="Registre um lancamento para acompanhar no painel.",
+SHELL_MOVIMENTACAO_CREATE = FormShellConfig(
+    page_title="Nova movimentacao",
+    page_subtitle="Registre uma entrada ou saida para acompanhar no painel.",
     submit_label="Salvar",
-    cancel_url_name="gastos",
-    page_action_url_name="gastos",
-    page_action_label="Voltar aos gastos",
+    cancel_url_name="movimentacoes",
+    page_action_url_name="movimentacoes",
+    page_action_label="Voltar as movimentacoes",
+    form_variant="movimentacao",
 )
 
-SHELL_GASTO_UPDATE = FormShellConfig(
-    page_title="Editar gasto",
-    page_subtitle="Atualize os dados deste lancamento.",
+SHELL_MOVIMENTACAO_UPDATE = FormShellConfig(
+    page_title="Editar movimentacao",
+    page_subtitle="Atualize os dados desta movimentacao.",
     submit_label="Salvar",
-    cancel_url_name="gastos",
-    page_action_url_name="gastos",
-    page_action_label="Voltar aos gastos",
+    cancel_url_name="movimentacoes",
+    page_action_url_name="movimentacoes",
+    page_action_label="Voltar as movimentacoes",
+    form_variant="movimentacao",
 )
 
 SHELL_META_CREATE = FormShellConfig(
@@ -429,24 +421,6 @@ SHELL_META_ADD_VALOR = FormShellConfig(
     form_variant="meta_add_value",
 )
 
-SHELL_SALDO_CREATE = FormShellConfig(
-    page_title="Adicionar saldo",
-    page_subtitle="Informe o saldo atual para acompanhar melhor seus gastos.",
-    submit_label="Salvar",
-    cancel_url_name="saldo",
-    page_action_url_name="saldo",
-    page_action_label="Voltar ao saldo",
-)
-
-SHELL_SALDO_UPDATE = FormShellConfig(
-    page_title="Editar saldo",
-    page_subtitle="Atualize o saldo da sua conta.",
-    submit_label="Salvar",
-    cancel_url_name="saldo",
-    page_action_url_name="saldo",
-    page_action_label="Voltar ao saldo",
-)
-
 SHELL_CONTATO = FormShellConfig(
     page_title="Contato",
     page_subtitle="Use o formulario para enviar duvidas, feedbacks ou pedidos de suporte.",
@@ -456,13 +430,13 @@ SHELL_CONTATO = FormShellConfig(
     form_variant="contato",
 )
 
-DELETE_GASTO = DeleteShellConfig(
-    page_title="Excluir gasto",
+DELETE_MOVIMENTACAO = DeleteShellConfig(
+    page_title="Excluir movimentacao",
     page_subtitle="Confirme para remover o lancamento permanentemente.",
-    confirmation_html=_gasto_delete_confirmation,
-    page_action_url_name="gastos",
+    confirmation_html=_movimentacao_delete_confirmation,
+    page_action_url_name="movimentacoes",
     page_action_label="Cancelar",
-    cancel_url_name="gastos",
+    cancel_url_name="movimentacoes",
     cancel_label="Voltar",
 )
 
@@ -473,15 +447,5 @@ DELETE_META = DeleteShellConfig(
     page_action_url_name="metas",
     page_action_label="Cancelar",
     cancel_url_name="metas",
-    cancel_label="Voltar",
-)
-
-DELETE_SALDO = DeleteShellConfig(
-    page_title="Excluir saldo",
-    page_subtitle="Confirme para remover o saldo permanentemente.",
-    confirmation_html=_saldo_delete_confirmation,
-    page_action_url_name="saldo",
-    page_action_label="Cancelar",
-    cancel_url_name="saldo",
     cancel_label="Voltar",
 )

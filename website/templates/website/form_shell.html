@@ -82,6 +82,32 @@
       </div>
     </section>
 
+  {% elif form_variant == "movimentacao" %}
+    <section class="form-shell">
+      <div class="section-title mb-2">{{ page_title }}</div>
+      <p class="section-copy mb-4">{{ page_subtitle }}</p>
+      {% include "components/forms.html" with submit_label=submit_label cancel_url=cancel_url actions_container_class=actions_container_class form_method=form_method show_form_errors_alert=show_form_errors_alert show_non_field_errors=show_non_field_errors submit_button_class=submit_button_class show_actions=show_actions %}
+    </section>
+    <script>
+      (function () {
+        var tipoField = document.getElementById('id_tipo');
+        var categoriaWrapper = document.getElementById('wrapper_categoria');
+        if (!tipoField || !categoriaWrapper) return;
+
+        function toggleCategoria() {
+          var isSaida = tipoField.value === 'saida';
+          categoriaWrapper.style.display = isSaida ? '' : 'none';
+          var categoriaSelect = document.getElementById('id_categoria');
+          if (categoriaSelect) {
+            categoriaSelect.required = isSaida;
+          }
+        }
+
+        toggleCategoria();
+        tipoField.addEventListener('change', toggleCategoria);
+      })();
+    </script>
+
   {% else %}
     <section class="form-shell">
       <div class="section-title mb-2">{{ page_title }}</div>

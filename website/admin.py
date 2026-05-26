@@ -1,12 +1,12 @@
 from django.contrib import admin
 
-from .models import Gasto, MensagemContato, Meta, Saldo
+from .models import MensagemContato, Meta, Movimentacao, Saldo
 
 
-@admin.register(Gasto)
-class GastoAdmin(admin.ModelAdmin):
-    list_display = ("titulo", "categoria", "valor", "data", "recorrente")
-    list_filter = ("categoria", "recorrente", "data")
+@admin.register(Movimentacao)
+class MovimentacaoAdmin(admin.ModelAdmin):
+    list_display = ("titulo", "tipo", "categoria", "valor", "data", "usuario")
+    list_filter = ("tipo", "categoria", "data")
     search_fields = ("titulo", "observacao")
 
 
