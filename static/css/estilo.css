@@ -94,20 +94,10 @@ body {
   max-width: 1440px;
   margin: 0 auto;
   padding: 24px;
-  display: grid;
-  gap: 24px;
-  grid-template-columns: {% if show_sidebar %}270px minmax(0, 1fr){% else %}minmax(0, 1fr){% endif %};
 }
 
-/* Agrupa topbar + main na mesma coluna do grid (evita 3º filho direto quebrando o layout). */
 .app-main-column {
   min-width: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-.app-main-column > nav {
-  padding-inline: 26px;
 }
 
 .app-sidebar,
@@ -226,14 +216,6 @@ body {
   padding: 26px;
   min-width: 0;
   background: var(--surface);
-}
-
-.topbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 20px;
-  margin-bottom: 24px;
 }
 
 .eyebrow {
@@ -739,7 +721,6 @@ button.btn-outline-surface {
 
 @media (max-width: 991px) {
   .app-shell {
-    grid-template-columns: 1fr;
     padding: 18px;
     gap: 18px;
   }
@@ -753,11 +734,6 @@ button.btn-outline-surface {
   .content-grid,
   .card-grid {
     grid-template-columns: 1fr;
-  }
-
-  .topbar {
-    flex-direction: column;
-    align-items: stretch;
   }
 
   .toolbar {
@@ -776,17 +752,12 @@ button.btn-outline-surface {
 @media (max-width: 767px) {
   .app-shell {
     padding: 12px;
-    gap: 12px;
   }
 
   .app-sidebar,
   .main-panel {
     border-radius: 20px;
     padding: 16px;
-  }
-
-  .app-main-column > nav {
-    padding-inline: 16px;
   }
 
   .content-card,
