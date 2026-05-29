@@ -27,3 +27,10 @@ htmlcov/
 # OS / editor
 .DS_Store
 Thumbs.db
+
+# Documentação e design do projeto
+DESIGN.md
+PRODUCT.md
+
+# Ferramentas externas
+.impeccable/
