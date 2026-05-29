@@ -1,5 +1,5 @@
 from django import forms
-from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
+from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm, UserCreationForm
 from django.contrib.auth.models import User
 from django.urls import reverse
 from django.utils.html import format_html
@@ -79,6 +79,88 @@ class CadastroForm(UserCreationForm):
         if commit:
             user.save()
         return user
+
+
+class PerfilForm(forms.ModelForm):
+    form_type = forms.CharField(widget=forms.HiddenInput(), initial="perfil")
+
+    class Meta:
+        model = User
+        fields = ("first_name", "last_name", "email")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["first_name"].label = "Nome"
+        self.fields["last_name"].label = "Sobrenome"
+        self.fields["last_name"].required = False
+        self.fields["email"].label = "E-mail"
+        self.helper = _crispy_helper(
+            Layout(
+                Field("form_type"),
+                Row(
+                    Column(Field("first_name"), css_class="col-12 col-md-6"),
+                    Column(Field("last_name"), css_class="col-12 col-md-6"),
+                ),
+                Row(Column(Field("email"), css_class="col-12")),
+            )
+        )
+
+    def clean_email(self):
+        email = self.cleaned_data["email"]
+        if User.objects.filter(email__iexact=email).exclude(pk=self.instance.pk).exists():
+            raise forms.ValidationError("Este e-mail ja esta em uso.")
+        return email
+
+
+class ContaSenhaForm(PasswordChangeForm):
+    form_type = forms.CharField(widget=forms.HiddenInput(), initial="senha")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["old_password"].label = "Senha atual"
+        self.fields["new_password1"].label = "Nova senha"
+        self.fields["new_password2"].label = "Confirmar nova senha"
+        self.helper = _crispy_helper(
+            Layout(
+                Field("form_type"),
+                Row(Column(Field("old_password"), css_class="col-12")),
+                Row(
+                    Column(Field("new_password1"), css_class="col-12 col-md-6"),
+                    Column(Field("new_password2"), css_class="col-12 col-md-6"),
+                ),
+            )
+        )
+
+
+class ExcluirContaForm(forms.Form):
+    password = forms.CharField(label="Senha atual", widget=forms.PasswordInput)
+    confirmacao = forms.CharField(
+        label="Digite seu usuario para confirmar",
+        help_text="Informe exatamente o nome de usuario da sua conta.",
+    )
+
+    def __init__(self, user, *args, **kwargs):
+        self.user = user
+        super().__init__(*args, **kwargs)
+        self.helper = _crispy_helper(
+            Layout(
+                Row(Column(Field("password"), css_class="col-12")),
+                Row(Column(Field("confirmacao"), css_class="col-12")),
+            )
+        )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        password = cleaned_data.get("password")
+        confirmacao = cleaned_data.get("confirmacao")
+
+        if password and not self.user.check_password(password):
+            self.add_error("password", "Senha incorreta.")
+
+        if confirmacao and confirmacao != self.user.username:
+            self.add_error("confirmacao", "O usuario informado nao confere.")
+
+        return cleaned_data
 
 
 class ContatoForm(forms.ModelForm):
@@ -428,6 +510,17 @@ SHELL_CONTATO = FormShellConfig(
     cancel_url_name=None,
     page_action_url_name=None,
     form_variant="contato",
+)
+
+SHELL_CONTA_EXCLUIR = FormShellConfig(
+    page_title="Excluir conta",
+    page_subtitle="Confirme sua identidade para encerrar o acesso permanentemente.",
+    submit_label="Excluir conta permanentemente",
+    cancel_url_name="conta",
+    page_action_url_name="conta",
+    page_action_label="Voltar para minha conta",
+    form_variant="conta_excluir",
+    submit_button_class="btn-accent",
 )
 
 DELETE_MOVIMENTACAO = DeleteShellConfig(

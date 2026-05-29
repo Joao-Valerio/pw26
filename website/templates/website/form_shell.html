@@ -82,6 +82,23 @@
       </div>
     </section>
 
+  {% elif form_variant == "conta_excluir" %}
+    <section class="form-shell account-danger" style="border-color: rgba(220, 53, 69, 0.22); background: linear-gradient(180deg, rgba(220, 53, 69, 0.05), transparent);">
+      <div class="section-title mb-2">{{ page_title }}</div>
+      <p class="section-copy mb-3">{{ page_subtitle }}</p>
+      {% if delete_confirmation_html %}
+        <p class="section-copy mb-4">{{ delete_confirmation_html|safe }}</p>
+      {% endif %}
+      {% include "components/forms.html" with form=form submit_label=submit_label cancel_url=cancel_url actions_container_class=actions_container_class form_method=form_method show_form_errors_alert=show_form_errors_alert show_non_field_errors=show_non_field_errors submit_button_class=submit_button_class show_actions=show_actions %}
+    </section>
+    <style>
+      .account-danger .btn-accent {
+        background: linear-gradient(135deg, #dc3545, #c94a38);
+        border: none;
+        box-shadow: 0 4px 14px rgba(220, 53, 69, 0.25);
+      }
+    </style>
+
   {% elif form_variant == "movimentacao" %}
     <section class="form-shell">
       <div class="section-title mb-2">{{ page_title }}</div>

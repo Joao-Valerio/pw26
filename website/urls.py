@@ -2,6 +2,8 @@ from django.urls import path
 from django.views.generic import RedirectView
 from .views import (
     CadastroView,
+    ContaExcluirView,
+    ContaView,
     ContatoView,
     DashboardView,
     InicioView,
@@ -42,6 +44,8 @@ urlpatterns = [
     path("recursos/", RecursosView.as_view(), name="recursos"),
     path("sobre/", SobreView.as_view(), name="sobre"),
     path("contato/", ContatoView.as_view(), name="contato"),
+    path("conta/", ContaView.as_view(), name="conta"),
+    path("conta/excluir/", ContaExcluirView.as_view(), name="conta_excluir"),
     path("cadastro/", CadastroView.as_view(), name="cadastro"),
     path("logout/", UsuarioLogoutView.as_view(), name="logout"),
     path("login/", UsuarioLoginView.as_view(), name="login"),

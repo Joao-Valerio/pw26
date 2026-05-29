@@ -94,9 +94,9 @@
       </div>
       <div class="toolbar">
         {% if user.is_authenticated %}
-          <span class="toolbar-chip">
+          <a href="{% url 'conta' %}" class="toolbar-chip">
             <i class="bi bi-person-circle me-2" aria-hidden="true"></i>{{ user.get_full_name|default:user.username }}
-          </span>
+          </a>
           <a href="{% url 'saldo' %}" class="btn-outline-surface">Saldo</a>
           <form action="{% url 'logout' %}" method="post" class="d-inline">
             {% csrf_token %}

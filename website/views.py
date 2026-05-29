@@ -1,5 +1,5 @@
 from django.contrib import messages
-from django.contrib.auth import login
+from django.contrib.auth import login, logout, update_session_auth_hash
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView as DjangoLoginView
 from django.contrib.auth.views import LogoutView as DjangoLogoutView
@@ -11,17 +11,21 @@ from django.views.generic.edit import FormView
 
 from .forms import (
     CadastroForm,
+    ContaSenhaForm,
     ContatoForm,
     DELETE_META,
     DELETE_MOVIMENTACAO,
     DeleteShellContextMixin,
+    ExcluirContaForm,
     FormShellContextMixin,
     LoginForm,
     MetaAdicionarValorForm,
     MetaFinanceiraForm,
     MovimentacaoForm,
+    PerfilForm,
     RelatorioFiltroForm,
     SHELL_CADASTRO,
+    SHELL_CONTA_EXCLUIR,
     SHELL_CONTATO,
     SHELL_LOGIN,
     SHELL_META_ADD_VALOR,
@@ -196,6 +200,74 @@ class CadastroView(FormShellContextMixin, BasePageMixin, FormView):
 
 class UsuarioLogoutView(DjangoLogoutView):
     next_page = reverse_lazy("login")
+
+
+class ContaView(AuthPageMixin, BasePageMixin, TemplateView):
+    template_name = "website/conta.html"
+    page_title = "Minha conta"
+    page_subtitle = "Gerencie seus dados pessoais, altere a senha ou encerre sua conta."
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.setdefault("perfil_form", PerfilForm(instance=self.request.user))
+        context.setdefault("senha_form", ContaSenhaForm(user=self.request.user))
+        return context
+
+    def post(self, request, *args, **kwargs):
+        form_type = request.POST.get("form_type")
+
+        if form_type == "perfil":
+            perfil_form = PerfilForm(request.POST, instance=request.user)
+            senha_form = ContaSenhaForm(user=request.user)
+            if perfil_form.is_valid():
+                perfil_form.save()
+                messages.success(request, "Dados pessoais atualizados com sucesso.")
+                return redirect("conta")
+            context = self.get_context_data(perfil_form=perfil_form, senha_form=senha_form)
+            return self.render_to_response(context)
+
+        if form_type == "senha":
+            perfil_form = PerfilForm(instance=request.user)
+            senha_form = ContaSenhaForm(user=request.user, data=request.POST)
+            if senha_form.is_valid():
+                senha_form.save()
+                update_session_auth_hash(request, senha_form.user)
+                messages.success(request, "Senha alterada com sucesso.")
+                return redirect("conta")
+            context = self.get_context_data(perfil_form=perfil_form, senha_form=senha_form)
+            return self.render_to_response(context)
+
+        return redirect("conta")
+
+
+class ContaExcluirView(FormShellContextMixin, AuthPageMixin, BasePageMixin, FormView):
+    template_name = TEMPLATE_FORM_SHELL
+    form_class = ExcluirContaForm
+    form_shell_config = SHELL_CONTA_EXCLUIR
+    success_url = reverse_lazy("inicio")
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["user"] = self.request.user
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["delete_confirmation_html"] = (
+            f"Voce esta prestes a excluir a conta <strong>{self.request.user.username}</strong>. "
+            "Todas as movimentacoes, metas e saldo vinculados serao removidos permanentemente."
+        )
+        return context
+
+    def form_valid(self, form):
+        user = self.request.user
+        username = user.username
+        Movimentacao.objects.filter(usuario=user).delete()
+        Meta.objects.filter(usuario=user).delete()
+        logout(self.request)
+        user.delete()
+        messages.success(self.request, f"Conta {username} excluida permanentemente.")
+        return super().form_valid(form)
 
 
 # --- Movimentacao ---

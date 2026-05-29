@@ -1,10 +1,100 @@
 from decimal import Decimal
 
 from django.contrib.auth.models import User
-from django.test import TestCase
+from django.test import Client, TestCase
 from django.urls import reverse
 
-from .models import Meta, Saldo
+from .models import Meta, Movimentacao, Saldo
+
+
+class ContaViewTest(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username="conta_user",
+            password="senha123forte",
+            email="conta@example.com",
+            first_name="Maria",
+            last_name="Silva",
+        )
+        self.client.force_login(self.user)
+
+    def test_pagina_conta_requer_login(self):
+        client = Client()
+        response = client.get(reverse("conta"))
+        self.assertRedirects(response, f"{reverse('login')}?next={reverse('conta')}")
+
+    def test_exibe_painel_da_conta(self):
+        response = self.client.get(reverse("conta"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Dados pessoais")
+        self.assertContains(response, "Alterar senha")
+        self.assertContains(response, "conta_user")
+
+    def test_atualiza_dados_pessoais(self):
+        response = self.client.post(
+            reverse("conta"),
+            {
+                "form_type": "perfil",
+                "first_name": "Ana",
+                "last_name": "Costa",
+                "email": "ana@example.com",
+            },
+        )
+        self.assertRedirects(response, reverse("conta"))
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.first_name, "Ana")
+        self.assertEqual(self.user.last_name, "Costa")
+        self.assertEqual(self.user.email, "ana@example.com")
+
+    def test_atualiza_senha(self):
+        response = self.client.post(
+            reverse("conta"),
+            {
+                "form_type": "senha",
+                "old_password": "senha123forte",
+                "new_password1": "novaSenha456!",
+                "new_password2": "novaSenha456!",
+            },
+        )
+        self.assertRedirects(response, reverse("conta"))
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.check_password("novaSenha456!"))
+
+
+class ContaExcluirViewTest(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username="delete_user",
+            password="senha123forte",
+        )
+        self.client.force_login(self.user)
+        self.meta = Meta.objects.create(
+            usuario=self.user,
+            titulo="Reserva",
+            valor_alvo="1000.00",
+            valor_atual="100.00",
+            prazo="2026-12-31",
+        )
+        Movimentacao.objects.create(
+            usuario=self.user,
+            titulo="Salario",
+            valor="500.00",
+            data="2026-01-10",
+            tipo=Movimentacao.Tipo.ENTRADA,
+        )
+
+    def test_exclui_conta_e_dados_vinculados(self):
+        response = self.client.post(
+            reverse("conta_excluir"),
+            {
+                "password": "senha123forte",
+                "confirmacao": "delete_user",
+            },
+        )
+        self.assertRedirects(response, reverse("inicio"))
+        self.assertFalse(User.objects.filter(username="delete_user").exists())
+        self.assertFalse(Meta.objects.filter(titulo="Reserva").exists())
+        self.assertFalse(Movimentacao.objects.filter(titulo="Salario").exists())
 
 
 class SaldoViewsTest(TestCase):

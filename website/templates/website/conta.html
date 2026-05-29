@@ -1,0 +1,154 @@
+{% extends "website/modelo.html" %}
+
+{% block title %}{{ page_title }} | FinTrack Django{% endblock %}
+
+{% block extra_css %}
+<style>
+  .account-panel {
+    display: grid;
+    gap: 18px;
+  }
+
+  .account-section-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 18px;
+  }
+
+  .account-section-header .resource-icon {
+    margin-bottom: 0;
+    flex-shrink: 0;
+  }
+
+  .account-section-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin: 0 0 4px;
+  }
+
+  .account-section-copy {
+    color: var(--text-soft);
+    margin: 0;
+    font-size: 0.92rem;
+  }
+
+  .account-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+
+  .account-meta-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    background: var(--surface-soft);
+    border: 1px solid var(--stroke);
+    color: var(--text-soft);
+    font-size: 0.86rem;
+  }
+
+  .account-meta-item strong {
+    color: var(--text-main);
+    font-weight: 600;
+  }
+
+  .account-danger {
+    border-color: rgba(220, 53, 69, 0.22);
+    background: linear-gradient(180deg, rgba(220, 53, 69, 0.05), transparent);
+  }
+
+  .account-danger .resource-icon {
+    background: rgba(220, 53, 69, 0.12);
+    color: #c94a38;
+  }
+
+  .account-danger-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 18px;
+  }
+
+  .btn-danger-zone {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border-radius: 14px;
+    padding: 10px 14px;
+    border: 1px solid rgba(220, 53, 69, 0.35);
+    background: linear-gradient(135deg, #dc3545, #c94a38);
+    color: var(--white);
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .btn-danger-zone:hover {
+    color: var(--white);
+    filter: brightness(1.05);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+  <div class="account-panel">
+    <section class="form-shell">
+      <div class="account-section-header">
+        <div class="resource-icon"><i class="bi bi-person-vcard" aria-hidden="true"></i></div>
+        <div>
+          <h2 class="account-section-title">Dados pessoais</h2>
+          <p class="account-section-copy">Atualize seu nome e e-mail de acesso.</p>
+        </div>
+      </div>
+
+      <div class="account-meta">
+        <span class="account-meta-item">
+          <i class="bi bi-person-badge" aria-hidden="true"></i>
+          Usuario: <strong>{{ user.username }}</strong>
+        </span>
+        <span class="account-meta-item">
+          <i class="bi bi-calendar3" aria-hidden="true"></i>
+          Membro desde <strong>{{ user.date_joined|date:"d/m/Y" }}</strong>
+        </span>
+      </div>
+
+      {% include "components/forms.html" with form=perfil_form submit_label="Salvar alteracoes" actions_container_class="d-flex flex-wrap gap-2" form_method="post" show_form_errors_alert=False show_non_field_errors=True submit_button_class="btn-accent" show_actions=True %}
+    </section>
+
+    <section class="form-shell">
+      <div class="account-section-header">
+        <div class="resource-icon"><i class="bi bi-shield-lock" aria-hidden="true"></i></div>
+        <div>
+          <h2 class="account-section-title">Alterar senha</h2>
+          <p class="account-section-copy">Use uma senha forte com pelo menos 8 caracteres.</p>
+        </div>
+      </div>
+
+      {% include "components/forms.html" with form=senha_form submit_label="Atualizar senha" actions_container_class="d-flex flex-wrap gap-2" form_method="post" show_form_errors_alert=False show_non_field_errors=True submit_button_class="btn-accent" show_actions=True %}
+    </section>
+
+    <section class="form-shell account-danger">
+      <div class="account-section-header">
+        <div class="resource-icon"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i></div>
+        <div>
+          <h2 class="account-section-title">Zona de perigo</h2>
+          <p class="account-section-copy">
+            Excluir sua conta remove permanentemente movimentacoes, metas e saldo vinculados.
+            Esta acao nao pode ser desfeita.
+          </p>
+        </div>
+      </div>
+
+      <div class="account-danger-actions">
+        <a href="{% url 'conta_excluir' %}" class="btn-danger-zone">
+          <i class="bi bi-trash3" aria-hidden="true"></i>
+          Excluir minha conta
+        </a>
+      </div>
+    </section>
+  </div>
+{% endblock %}
