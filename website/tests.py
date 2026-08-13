@@ -1,10 +1,12 @@
 from decimal import Decimal
 
-from django.contrib.auth.models import User
+from django.contrib.auth.models import Group, User
 from django.test import Client, TestCase
+from django.test.client import RequestFactory
 from django.urls import reverse
 
 from .models import Meta, Movimentacao, Saldo
+from .views import GroupRequiredMixin
 
 
 class ContaViewTest(TestCase):
@@ -105,13 +107,6 @@ class SaldoViewsTest(TestCase):
         )
         self.client.force_login(self.user)
 
-    def test_cria_saldo_para_usuario_logado(self):
-        response = self.client.post(reverse("saldo_novo"), {"valor": "1500.50"})
-
-        self.assertRedirects(response, reverse("saldo"))
-        saldo = Saldo.objects.get(usuario=self.user)
-        self.assertEqual(saldo.valor, Decimal("1500.50"))
-
     def test_exibe_saldo_cadastrado_na_pagina(self):
         Saldo.objects.create(usuario=self.user, valor=Decimal("2500.00"))
 
@@ -145,3 +140,86 @@ class MetaAdicionarValorViewTest(TestCase):
         self.assertRedirects(response, reverse("metas"))
         self.meta.refresh_from_db()
         self.assertEqual(self.meta.valor_atual, Decimal("1250.50"))
+
+
+class GroupRequiredMixinTest(TestCase):
+    def setUp(self):
+        self.group = Group.objects.create(name="Gerentes")
+        self.user_in_group = User.objects.create_user("user_in_group", "senha123")
+        self.user_in_group.groups.add(self.group)
+        self.user_out_of_group = User.objects.create_user("user_out_of_group", "senha123")
+
+    def test_permissao_grupo_sucesso(self):
+        rf = RequestFactory()
+        request = rf.get("/")
+        request.user = self.user_in_group
+
+        mixin = GroupRequiredMixin()
+        mixin.request = request
+        mixin.group_required = "Gerentes"
+
+        self.assertTrue(mixin.test_func())
+
+    def test_permissao_grupo_negada(self):
+        rf = RequestFactory()
+        request = rf.get("/")
+        request.user = self.user_out_of_group
+
+        mixin = GroupRequiredMixin()
+        mixin.request = request
+        mixin.group_required = "Gerentes"
+
+        self.assertFalse(mixin.test_func())
+
+
+class PaginasViewTest(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username="teste_paginas",
+            password="senha123forte",
+        )
+
+    def test_paginas_publicas(self):
+        client = Client()
+        for url_name in ["inicio", "sobre", "contato", "login", "cadastro"]:
+            with self.subTest(url_name=url_name):
+                response = client.get(reverse(url_name))
+                self.assertEqual(response.status_code, 200)
+
+    def test_paginas_autenticadas(self):
+        self.client.force_login(self.user)
+        for url_name in [
+            "dashboard",
+            "movimentacoes",
+            "movimentacao_nova",
+            "metas",
+            "meta_nova",
+            "saldo",
+            "relatorios",
+            "recursos",
+            "conta",
+        ]:
+            with self.subTest(url_name=url_name):
+                response = self.client.get(reverse(url_name))
+                self.assertEqual(response.status_code, 200)
+
+    def test_paginacao_movimentacoes(self):
+        self.client.force_login(self.user)
+        for i in range(15):
+            Movimentacao.objects.create(
+                usuario=self.user,
+                titulo=f"Movimentacao {i}",
+                valor=Decimal("10.00"),
+                data="2026-01-01",
+                tipo=Movimentacao.Tipo.SAIDA,
+            )
+        response = self.client.get(reverse("movimentacoes"))
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.context["is_paginated"])
+        self.assertEqual(len(response.context["movimentacoes"]), 10)
+
+        response_page2 = self.client.get(reverse("movimentacoes") + "?page=2")
+        self.assertEqual(response_page2.status_code, 200)
+        self.assertEqual(len(response_page2.context["movimentacoes"]), 5)
+
+

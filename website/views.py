@@ -1,6 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth import login, logout, update_session_auth_hash
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.views import LoginView as DjangoLoginView
 from django.contrib.auth.views import LogoutView as DjangoLogoutView
 from django.shortcuts import redirect
@@ -40,8 +40,26 @@ from .models import Meta, Movimentacao, Saldo
 from .services import build_dashboard_context
 
 
+class GroupRequiredMixin(UserPassesTestMixin):
+    group_required = None
+    login_url = reverse_lazy("login")
+
+    def test_func(self):
+        user = self.request.user
+        if not user.is_authenticated:
+            return False
+        if not self.group_required:
+            return True
+        if isinstance(self.group_required, str):
+            groups = [self.group_required]
+        else:
+            groups = self.group_required
+        return user.groups.filter(name__in=groups).exists()
+
+
 class AuthPageMixin(LoginRequiredMixin):
     login_url = reverse_lazy("login")
+
 
 
 class BasePageMixin:
@@ -74,24 +92,25 @@ class MovimentacoesView(AuthPageMixin, BasePageMixin, ListView):
     model = Movimentacao
     template_name = "website/movimentacoes.html"
     context_object_name = "movimentacoes"
+    paginate_by = 10
     page_title = "Movimentacoes"
     page_subtitle = "Entradas e saidas registradas para acompanhar seu saldo."
 
     def get_queryset(self):
-        return Movimentacao.objects.filter(usuario=self.request.user).order_by("-data", "-created_at")
+        return Movimentacao.objects.filter(usuario=self.request.user).select_related("usuario").order_by("-data", "-created_at")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        movimentacoes = context["object_list"]
-        context["movimentacoes"] = movimentacoes
-        entradas = [m for m in movimentacoes if m.tipo == Movimentacao.Tipo.ENTRADA]
-        saidas = [m for m in movimentacoes if m.tipo == Movimentacao.Tipo.SAIDA]
+        all_movimentacoes = list(Movimentacao.objects.filter(usuario=self.request.user).select_related("usuario"))
+        entradas = [m for m in all_movimentacoes if m.tipo == Movimentacao.Tipo.ENTRADA]
+        saidas = [m for m in all_movimentacoes if m.tipo == Movimentacao.Tipo.SAIDA]
         context["total_entradas"] = sum(m.valor for m in entradas)
         context["total_saidas"] = sum(m.valor for m in saidas)
-        context["saldo"] = Saldo.objects.filter(usuario=self.request.user).first()
+        context["saldo"] = Saldo.objects.filter(usuario=self.request.user).select_related("usuario").first()
         dashboard_ctx = build_dashboard_context(self.request.user)
         context["categorias_gasto"] = dashboard_ctx.get("categorias_gasto", [])
         return context
+
 
 
 class MetasView(AuthPageMixin, BasePageMixin, TemplateView):
@@ -276,7 +295,7 @@ class MovimentacaoUserMixin(AuthPageMixin):
     model = Movimentacao
 
     def get_queryset(self):
-        return Movimentacao.objects.filter(usuario=self.request.user)
+        return Movimentacao.objects.filter(usuario=self.request.user).select_related("usuario")
 
 
 class MovimentacaoCreateView(FormShellContextMixin, AuthPageMixin, BasePageMixin, CreateView):
@@ -343,7 +362,7 @@ class MetaUserMixin(AuthPageMixin):
     model = Meta
 
     def get_queryset(self):
-        return Meta.objects.filter(usuario=self.request.user)
+        return Meta.objects.filter(usuario=self.request.user).select_related("usuario")
 
 
 class MetaCreateView(FormShellContextMixin, AuthPageMixin, BasePageMixin, CreateView):
@@ -419,9 +438,9 @@ class SaldoView(AuthPageMixin, BasePageMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        saldo = Saldo.objects.filter(usuario=self.request.user).first()
+        saldo = Saldo.objects.filter(usuario=self.request.user).select_related("usuario").first()
         context["saldo"] = saldo
-        movimentacoes = Movimentacao.objects.filter(usuario=self.request.user).order_by("-data", "-created_at")
+        movimentacoes = Movimentacao.objects.filter(usuario=self.request.user).select_related("usuario").order_by("-data", "-created_at")
         entradas = movimentacoes.filter(tipo=Movimentacao.Tipo.ENTRADA)
         saidas = movimentacoes.filter(tipo=Movimentacao.Tipo.SAIDA)
         from django.db.models import Sum

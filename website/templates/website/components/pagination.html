@@ -1,0 +1,41 @@
+{% if is_paginated %}
+  <nav class="pagination-container my-4" aria-label="Navegacao de pagina">
+    <ul class="pagination justify-content-center mb-0" style="display: flex; gap: 0.5rem; list-style: none; padding: 0; align-items: center; justify-content: center;">
+      {% if page_obj.has_previous %}
+        <li class="page-item">
+          <a class="btn-outline-surface px-3 py-1" href="?page=1" aria-label="Primeira">&laquo; Primeira</a>
+        </li>
+        <li class="page-item">
+          <a class="btn-outline-surface px-3 py-1" href="?page={{ page_obj.previous_page_number }}" aria-label="Anterior">Anterior</a>
+        </li>
+      {% else %}
+        <li class="page-item disabled">
+          <span class="btn-outline-surface px-3 py-1 opacity-50">&laquo; Primeira</span>
+        </li>
+        <li class="page-item disabled">
+          <span class="btn-outline-surface px-3 py-1 opacity-50">Anterior</span>
+        </li>
+      {% endif %}
+
+      <li class="page-item active">
+        <span class="px-3 py-1 fw-bold" style="background: var(--surface-muted, #f1f5f9); border-radius: 6px;">Pagina {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+      </li>
+
+      {% if page_obj.has_next %}
+        <li class="page-item">
+          <a class="btn-outline-surface px-3 py-1" href="?page={{ page_obj.next_page_number }}" aria-label="Proxima">Proxima</a>
+        </li>
+        <li class="page-item">
+          <a class="btn-outline-surface px-3 py-1" href="?page={{ page_obj.paginator.num_pages }}" aria-label="Ultima">Ultima &raquo;</a>
+        </li>
+      {% else %}
+        <li class="page-item disabled">
+          <span class="btn-outline-surface px-3 py-1 opacity-50">Proxima</span>
+        </li>
+        <li class="page-item disabled">
+          <span class="btn-outline-surface px-3 py-1 opacity-50">Ultima &raquo;</span>
+        </li>
+      {% endif %}
+    </ul>
+  </nav>
+{% endif %}

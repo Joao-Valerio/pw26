@@ -1,8 +1,26 @@
 from decimal import Decimal
+import os
 
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Sum
+from django.utils import timezone
+
+
+def validar_extensao_e_tamanho_imagem(file):
+    """
+    Valida se o arquivo enviado possui extensão de imagem permitida (.jpg, .jpeg, .png, .webp)
+    e limita o tamanho a no máximo 5MB.
+    """
+    ext = os.path.splitext(file.name)[1].lower()
+    extensoes_validas = ['.jpg', '.jpeg', '.png', '.webp']
+    if ext not in extensoes_validas:
+        raise ValidationError(f"Extensão não suportada. Envie uma imagem nos formatos: {', '.join(extensoes_validas)}.")
+    
+    tamanho_maximo_bytes = 5 * 1024 * 1024  # 5 MB
+    if file.size > tamanho_maximo_bytes:
+        raise ValidationError("O tamanho máximo da imagem é de 5MB.")
 
 
 class TimeStampedModel(models.Model):
@@ -29,7 +47,7 @@ class Movimentacao(TimeStampedModel):
 
     usuario = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
+        on_delete=models.CASCADE,
         null=True,
         blank=True,
         related_name="movimentacoes",
@@ -89,7 +107,7 @@ def _recalcular_saldo(usuario):
 class Meta(TimeStampedModel):
     usuario = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
+        on_delete=models.CASCADE,
         null=True,
         blank=True,
         related_name="metas_financeiras",
@@ -122,6 +140,34 @@ class Meta(TimeStampedModel):
         return max(restante, Decimal("0.00"))
 
 
+class FotoGaleria(TimeStampedModel):
+    """
+    Modelo para a Galeria de Fotos / Comprovantes.
+    Permite armazenar imagens de recibos e notas vinculados unicamente ao usuário autenticado.
+    """
+    usuario = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="fotos_galeria",
+    )
+    titulo = models.CharField(max_length=120, verbose_name="Título do comprovante / foto")
+    descricao = models.TextField(blank=True, verbose_name="Descrição ou observação")
+    imagem = models.ImageField(
+        upload_to="galeria/%Y/%m/",
+        validators=[validar_extensao_e_tamanho_imagem],
+        verbose_name="Arquivo de imagem",
+    )
+    data_registro = models.DateField(default=timezone.now, verbose_name="Data do registro")
+
+    class Meta:
+        ordering = ["-data_registro", "-created_at"]
+        verbose_name = "Foto da Galeria"
+        verbose_name_plural = "Fotos da Galeria"
+
+    def __str__(self):
+        return f"{self.titulo} ({self.usuario.username})"
+
+
 class Saldo(TimeStampedModel):
     usuario = models.OneToOneField(
         settings.AUTH_USER_MODEL,
@@ -152,3 +198,4 @@ class MensagemContato(TimeStampedModel):
 
     def __str__(self):
         return f"{self.nome} - {self.assunto}"
+

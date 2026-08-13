@@ -73,7 +73,7 @@ def get_saidas(user, *, desde=None, categoria=None):
         return []
     qs = Movimentacao.objects.filter(
         usuario=user, tipo=Movimentacao.Tipo.SAIDA
-    ).order_by("-data")
+    ).select_related("usuario").order_by("-data")
     if desde is not None:
         qs = qs.filter(data__gte=desde)
     if categoria:
@@ -87,7 +87,7 @@ def get_entradas(user, *, desde=None):
         return []
     qs = Movimentacao.objects.filter(
         usuario=user, tipo=Movimentacao.Tipo.ENTRADA
-    ).order_by("-data")
+    ).select_related("usuario").order_by("-data")
     if desde is not None:
         qs = qs.filter(data__gte=desde)
     return _safe_list(qs)
@@ -96,7 +96,8 @@ def get_entradas(user, *, desde=None):
 def get_metas(user):
     if not user.is_authenticated:
         return []
-    return _safe_list(Meta.objects.filter(usuario=user).order_by("prazo"))
+    return _safe_list(Meta.objects.filter(usuario=user).select_related("usuario").order_by("prazo"))
+
 
 
 def _monthly_series(saidas, today=None):
@@ -250,7 +251,7 @@ def build_dashboard_context(user, *, periodo_dias=None, categoria=None):
     line_pts = build_chart_points(line_items, width=320, height=150)
 
     try:
-        saldo_obj = Saldo.objects.filter(usuario=user).first() if user.is_authenticated else None
+        saldo_obj = Saldo.objects.filter(usuario=user).select_related("usuario").first() if user.is_authenticated else None
     except (OperationalError, Exception):
         saldo_obj = None
 

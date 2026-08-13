@@ -11,7 +11,7 @@
   <section class="card-grid">
     <article class="mini-card">
       <div class="label">Lancamentos</div>
-      <div class="value">{{ movimentacoes|length }}</div>
+      <div class="value">{% if paginator %}{{ paginator.count }}{% else %}{{ movimentacoes|length }}{% endif %}</div>
       <div class="meta">Total de movimentacoes registradas.</div>
     </article>
     <article class="mini-card">
@@ -32,6 +32,8 @@
   </section>
 
   {% include "website/components/tabela_movimentacoes.html" with movimentacoes=movimentacoes %}
+  {% include "website/components/pagination.html" %}
+
 
   {% if categorias_gasto %}
     <section class="content-grid">
